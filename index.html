@@ -342,6 +342,22 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand-d);cursor:p
 .ms-node .del:hover{color:var(--red)}
 /* Gantt v2 */
 .g2{display:flex;position:relative;user-select:none}
+/* 階段總覽（唯讀彩色時間軸） */
+.gov-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);box-shadow:0 1px 2px rgba(16,40,32,.04)}
+.gov-head{display:flex;border-bottom:1px solid var(--line);background:var(--panel2)}
+.gov-corner{width:180px;flex:none;font-weight:800;font-size:13px;color:var(--brand-d);display:flex;align-items:center;padding:11px 16px;border-right:1px solid var(--line)}
+.gov-months{flex:1;display:flex}
+.gov-m{flex:1;text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);padding:11px 0;border-right:1px solid var(--line)}
+.gov-m:last-child{border-right:none}
+.gov-m.cur{color:var(--brand-ink);background:var(--brand);border-radius:0}
+.gov-row{display:flex;align-items:center;height:42px;border-bottom:1px solid var(--line)}
+.gov-row:last-child{border-bottom:none}
+.gov-label{width:180px;flex:none;font-size:12.5px;font-weight:600;padding:0 16px;border-right:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:100%;display:flex;align-items:center;gap:8px}
+.gov-label .dot{width:9px;height:9px;border-radius:3px;flex:none}
+.gov-track{position:relative;flex:1;height:100%}
+.gov-bar{position:absolute;top:9px;height:24px;border-radius:6px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.gov-title{padding:12px 16px 10px;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.gov-title .sub{font-size:11.5px;font-weight:500;color:var(--muted)}
 .g2-left{width:1044px;flex:none;border-right:1px solid var(--line);background:var(--panel)}
 .g2COLS{grid-template-columns:minmax(140px,1fr) 104px 128px 52px 128px 128px 104px 96px}
 .g2-rowname{display:grid;grid-template-columns:minmax(140px,1fr) 104px 128px 52px 128px 128px 104px 96px;gap:9px;padding:0 12px;align-items:center}
@@ -691,6 +707,10 @@ tr.ct-addrow td{border-bottom:none;padding-top:10px}
             <span class="hint" style="margin:0">子任務可於左側逐一設定 START/END（自動算工作日）；拖曳任務條改期／縮放，hover 端點拉線建立依賴（下游自動向後對齊）。父階段時間為自動彙總。</span>
           </div>
           <!-- 甘特圖 -->
+          <div class="panel" id="stage-overview" style="padding:0;overflow:hidden;margin-bottom:16px">
+            <div class="gov-title">🗺 專案階段總覽（大任務）<span class="sub">依月份時間軸呈現各階段起訖，僅供檢視</span></div>
+            <div id="gov-body"></div>
+          </div>
           <div class="panel" id="gantt-card" style="padding:0;overflow:hidden">
             <div class="g2-addstage"><b style="font-size:13px">📅 甘特圖時程表（可編輯）</b><button class="btn sm" onclick="tlAddStage()">＋ 新增階段</button></div>
             <div class="g2" id="g2"></div>
@@ -1242,7 +1262,36 @@ function tlStatuses(tl){
   return st;
 }
 function byTask(id){ return (currentProject.tl.tasks||[]).find(t=>t.id===id); }
-function renderTimeline(){ tlRollup(currentProject.tl); renderTeamFilter(); renderMsTimeline(); renderGantt2(); }
+function renderTimeline(){ tlRollup(currentProject.tl); renderTeamFilter(); renderMsTimeline(); renderGanttOverview(); renderGantt2(); }
+const GOV_PAL=['#e5484d','#f79009','#12b76a','#2e6fff','#7a5af8','#e5484d','#f79009','#12b76a','#2e6fff','#7a5af8'];
+const GOV_MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function renderGanttOverview(){
+  const p=currentProject, tl=p&&p.tl; const host=document.getElementById('gov-body'); if(!host) return;
+  if(!tl){ host.innerHTML=''; return; }
+  tlRollup(tl);
+  const groups=(tl.tasks||[]).filter(t=>t.group&&t.e>=t.s);
+  if(!groups.length){ host.innerHTML='<div class="d-empty" style="padding:24px"><div class="ei">🗺</div><div class="et">尚未建立任何階段</div></div>'; return; }
+  let mn=Math.min(...groups.map(g=>g.s)), mx=Math.max(...groups.map(g=>g.e));
+  const dMin=gDate(mn), dMax=gDate(mx);
+  const y0=dMin.getFullYear(), m0=dMin.getMonth(), y1=dMax.getFullYear(), m1=dMax.getMonth();
+  const months=[]; let yy=y0, mm=m0;
+  while(yy<y1 || (yy===y1&&mm<=m1)){ months.push([yy,mm]); mm++; if(mm>11){mm=0;yy++;} }
+  const nM=months.length||1;
+  const todD=gDate(G_TODAY);
+  const frac=d=>{ const yi=(d.getFullYear()-y0)*12+(d.getMonth()-m0); const dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); return yi+(d.getDate()-1)/dim; };
+  const yrLabel = y1!==y0? (y0+' – '+y1) : (''+y0);
+  const head=`<div class="gov-head"><div class="gov-corner">📅 ${yrLabel}</div><div class="gov-months">`+
+    months.map(([y,m])=>`<div class="gov-m${(y===todD.getFullYear()&&m===todD.getMonth())?' cur':''}">${GOV_MON[m]}</div>`).join('')+`</div></div>`;
+  const rows=groups.map((g,i)=>{
+    const sD=gDate(g.s), eD=gDate(g.e);
+    const s=frac(sD), e=frac(eD)+1/new Date(eD.getFullYear(),eD.getMonth()+1,0).getDate();
+    const left=Math.max(0,s/nM*100), width=Math.max(4,(e-s)/nM*100), col=GOV_PAL[i%GOV_PAL.length];
+    const rng=(sD.getMonth()+1)+'/'+sD.getDate()+' – '+(eD.getMonth()+1)+'/'+eD.getDate();
+    return `<div class="gov-row"><div class="gov-label"><span class="dot" style="background:${col}"></span>${g.name||'階段 '+(i+1)}</div>
+      <div class="gov-track"><div class="gov-bar" title="${(g.name||'').replace(/"/g,'&quot;')}｜${rng}" style="left:${left}%;width:${width}%;background:${col}">${rng}</div></div></div>`;
+  }).join('');
+  host.innerHTML=head+rows;
+}
 /* 團隊篩選（連動團隊角色） */
 function renderTeamFilter(){
   const p=currentProject, el=document.getElementById('tl-filter'); if(!el) return;
