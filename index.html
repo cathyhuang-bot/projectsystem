@@ -342,10 +342,10 @@ input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand-d);cursor:p
 .ms-node .del:hover{color:var(--red)}
 /* Gantt v2 */
 .g2{display:flex;position:relative;user-select:none}
-.g2-left{width:1180px;flex:none;border-right:1px solid var(--line);background:var(--panel)}
-.g2COLS{grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px}
-.g2-rowname{display:grid;grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px;gap:9px;padding:0 12px;align-items:center}
-.g2lh{display:grid;grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px;gap:9px;padding:0 12px;color:var(--muted);font-size:11.5px;font-weight:700;align-items:center;height:34px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.g2-left{width:1044px;flex:none;border-right:1px solid var(--line);background:var(--panel)}
+.g2COLS{grid-template-columns:minmax(140px,1fr) 104px 128px 52px 128px 128px 104px 96px}
+.g2-rowname{display:grid;grid-template-columns:minmax(140px,1fr) 104px 128px 52px 128px 128px 104px 96px;gap:9px;padding:0 12px;align-items:center}
+.g2lh{display:grid;grid-template-columns:minmax(140px,1fr) 104px 128px 52px 128px 128px 104px 96px;gap:9px;padding:0 12px;color:var(--muted);font-size:11.5px;font-weight:700;align-items:center;height:34px;background:var(--panel2);border-bottom:1px solid var(--line)}
 .g2-rowname .gbtns{display:flex;gap:4px;align-items:center;justify-content:flex-end}
 .g2lh span:nth-child(n+2){text-align:center}
 .g2-rowname .gd,.g2-rowname .ssel,.g2-rowname .tsel{text-align:center;text-align-last:center}
@@ -931,7 +931,6 @@ function renderMaster(){
   const sf=document.getElementById('f-status').value;
   const mon=document.getElementById('f-margin').classList.contains('on');
   const maint = sf==='維護中';
-  // 動態表頭：維護中檢視顯示維運相關欄位
   document.getElementById('master-head').innerHTML = maint
     ? `<tr><th style="width:36px;text-align:center"><input type="checkbox" id="sel-all" onclick="toggleSelAll(this)"></th>
         <th>專案代碼</th><th>專案名稱</th><th>產品類型</th><th>負責人 (PJM)</th><th>狀態</th><th>維護時間</th>
@@ -1317,7 +1316,7 @@ function renderGantt2(){
       const isMs=(p.miles||[]).some(m=>m.assoc===t.id);
       const GMETA={done:['已達成','done'],over:['嚴重逾期','over'],amber:['風險預警','risk'],ontrack:['進行中','doing']};
       const [glbl,gcls]=GMETA[cls]||GMETA.ontrack;
-      left+=`<div class="g2-rowname group"><span class="nm">▸<input class="cin" style="background:transparent;border:none;font-weight:800" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="tlSetName('${t.id}',this.value)"></span><span></span><span class="dcol endv">${gDateFull(t.s)}</span><span class="dcol">${netDays(t.s,t.e)}d</span><span class="dcol endv">${gDateFull(t.e)}</span><span></span><span style="text-align:center"><span class="tag ${gcls}">${glbl}</span></span><span class="gbtns"><span class="addc" onclick="tlAddChild('${t.id}')">＋子任務</span><span class="addc" onclick="tlAddStageMs('${t.id}')">🎯里程碑${isMs?'✓':''}</span><span class="op" onclick="tlDelTask('${t.id}')">🗑</span></span></div>`;
+      left+=`<div class="g2-rowname group"><span class="nm">▸<input class="cin" style="background:transparent;border:none;font-weight:800" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="tlSetName('${t.id}',this.value)"></span><span></span><span class="dcol endv">${gDateFull(t.s)}</span><span class="dcol">${netDays(t.s,t.e)}d</span><span class="dcol endv">${gDateFull(t.e)}</span><span></span><span style="text-align:center"><span class="tag ${gcls}">${glbl}</span></span><span class="gbtns"><span class="addc" title="新增子任務" onclick="tlAddChild('${t.id}')">＋</span><span class="addc" title="設為里程碑" onclick="tlAddStageMs('${t.id}')">🎯${isMs?'✓':''}</span><span class="op" onclick="tlDelTask('${t.id}')">🗑</span></span></div>`;
       right+=`<div class="g2-track"><div class="todayline" style="left:${(G_TODAY-G_VS)*DW}px"></div>
         <div class="g2bar grp" style="left:${(t.s-G_VS)*DW}px;width:${(t.e-t.s+1)*DW}px"></div></div>`;
     } else {
