@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>專案管理系統 · 時程與成本控管模組 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f8f6; --panel:#ffffff; --panel2:#f1f6f4; --line:#e3ebe8;
+  --txt:#16241f; --muted:#6d7f79; --brand:#00dc87; --brand-d:#00b56f; --brand-ink:#053526;
+  --green:#12b76a; --amber:#f79009; --red:#e5484d; --purple:#7a5af8; --blue:#2e6fff;
+  --chip:#eef3f1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Noto Sans TC','PingFang TC',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+/* ---- 基本資料頁精修 ---- */
+.proj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.proj-cta{display:flex;gap:10px;flex:none}
+.ph{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.ph h3{margin:0}
+.ph-act{justify-content:space-between}
+.qic{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--chip);color:var(--muted);font-size:11px;cursor:help;margin-left:4px}
+.lockic{color:var(--muted);font-size:11px}
+.field .inp.ro{background:var(--panel2);color:var(--muted)}
+.field .num-r{text-align:right}
+.kpibig{padding:12px 0;border-bottom:1px solid var(--line)}
+.kpibig:last-child{border-bottom:none}
+.kpibig .lbl{color:#64748b;font-size:12.5px;margin-bottom:4px}
+.kpibig .v{font-size:28px;font-weight:700;color:#0f172a;letter-spacing:-.01em}
+.kpibig .v.vsm{font-size:18px}
+.kpibig.warn{background:rgba(229,62,62,.06);border-radius:8px;padding:12px 14px;border-bottom:none;margin-bottom:1px}
+.kpibig.warn .v{color:#E53E3E}
+.warn-pill{display:inline-block;margin-top:8px;background:#E53E3E;color:#fff;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px}
+.ov-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+.ov-main{display:flex;flex-direction:column;gap:18px}
+.field .inp,.field .sel{height:40px}
+.field input[type=date].inp{height:40px}
+.member-empty{text-align:center;padding:30px 10px;color:var(--muted)}
+.member-empty .ei{font-size:30px;opacity:.4}
+.member-empty .et{font-weight:600;color:var(--txt);margin-top:8px}
+.member-empty .es{font-size:12px;margin-top:3px}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.side{background:var(--panel);border-right:1px solid var(--line);padding:18px 12px}
+.logo{display:flex;align-items:center;gap:9px;padding:6px 10px 18px;font-weight:800;font-size:18px}
+.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--brand);box-shadow:0 0 10px rgba(0,220,135,.6)}
+.nav-group{font-size:11px;letter-spacing:.08em;color:var(--muted);padding:14px 12px 6px;text-transform:uppercase}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--muted);text-decoration:none;cursor:pointer;font-size:13.5px}
+.nav a:hover{background:var(--panel2);color:var(--txt)}
+.nav a.active{background:var(--brand);color:var(--brand-ink);font-weight:700}
+.nav a.subnav{padding:7px 12px 7px 34px;font-size:12.5px}
+.nav a.subnav.active{background:var(--panel2);color:var(--txt);font-weight:600}
+.nav a .ic{width:18px;text-align:center}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--line);background:var(--panel)}
+.crumb{color:var(--muted);font-size:13px}
+.crumb b{color:var(--txt)}
+.top-right{display:flex;align-items:center;gap:16px}
+.bell{position:relative;cursor:pointer;font-size:20px}
+.bell .badge{position:absolute;top:-6px;right:-8px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 5px}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--brand-ink)}
+.content{padding:24px 26px;overflow:auto}
+h1{font-size:20px;margin-bottom:3px}
+.pagesub{color:var(--muted);margin-bottom:18px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:0 1px 2px rgba(16,40,32,.04)}
+.kpi .lbl{color:var(--muted);font-size:12px;margin-bottom:6px}
+.kpi .val{font-size:23px;font-weight:800}
+.kpi .val.sm{font-size:19px}
+.kpi .ktrend{font-size:11.5px;color:var(--muted);margin-top:5px}
+/* ===== 專案儀表板 ===== */
+.dash-grid{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:16px;align-items:start}
+.dcol{display:flex;flex-direction:column;gap:16px}
+.dcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 2px rgba(16,40,32,.04)}
+.dcard-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}
+.dcard-hd h3{margin:0;font-size:15px}
+.dcard-hd .csub{color:var(--muted);font-size:12px}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:13px;flex:1}
+.dl-row{display:flex;align-items:center;gap:9px;font-size:13px}
+.dl-row .sw{width:11px;height:11px;border-radius:3px;flex:none}
+.dl-row .dl-name{color:var(--muted);flex:1}
+.dl-row .dl-cnt{color:var(--muted);font-size:12px;margin-right:2px}
+.dl-row .dl-pct{font-weight:800;font-size:15px}
+.finbar{margin-bottom:15px}
+.finbar:last-child{margin-bottom:2px}
+.fb-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px}
+.fb-top .fb-name{color:var(--muted)}
+.fb-top .fb-val{font-weight:700;color:#0f172a}
+.fb-track{height:9px;border-radius:6px;background:var(--panel2);overflow:hidden}
+.fb-fill{height:100%;border-radius:6px}
+.risk-item{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--line)}
+.risk-item:last-child{border-bottom:none}
+.risk-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.risk-main{flex:1;min-width:0}
+.risk-name{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-chip{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:20px;margin-right:6px;vertical-align:1px}
+.risk-reason{color:var(--muted);font-size:11.5px;margin-top:2px}
+.risk-val{font-weight:800;font-size:14px;flex:none;text-align:right}
+.risk-val .rv-lbl{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
+.d-empty{text-align:center;padding:34px 10px;color:var(--muted)}
+.d-empty .ei{font-size:30px;opacity:.4}
+.d-empty .et{margin-top:8px;font-size:12.5px}
+.up-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.up-item:last-child{border-bottom:none}
+.up-date{width:50px;text-align:center;flex:none;background:var(--panel2);border-radius:10px;padding:6px 0}
+.up-date .d{font-size:18px;font-weight:800;line-height:1}
+.up-date .m{font-size:10.5px;color:var(--muted);margin-top:2px}
+.up-main{flex:1;min-width:0}
+.up-name{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up-meta{color:var(--muted);font-size:11.5px;margin-top:2px}
+.up-days{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none;white-space:nowrap}
+.pm-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pm-row:last-child{border-bottom:none}
+.pm-ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:var(--brand-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none}
+.pm-main{flex:1;min-width:0}
+.pm-name{font-weight:600;font-size:13px}
+.pm-sub{color:var(--muted);font-size:11.5px;margin-top:1px}
+.pm-count{font-weight:800;font-size:15px;text-align:right}
+.pm-count .pc-lbl{display:block;font-weight:500;font-size:10.5px;color:var(--muted)}
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.inp,.sel{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:8px 11px;font-size:13px;outline:none}
+.inp:focus,.sel:focus{border-color:var(--brand)}
+.inp{min-width:220px}
+.btn{background:var(--brand);color:var(--brand-ink);border:none;border-radius:9px;padding:8px 15px;font-size:13px;cursor:pointer;font-weight:700}
+.btn:hover{background:var(--brand-d);color:#fff}
+.btn.ghost{background:var(--panel);border:1px solid var(--line);color:var(--txt)}
+.btn.ghost:hover{background:var(--panel2)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.spacer{flex:1}
+.tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(16,40,32,.04)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 14px;font-size:13px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600;background:var(--panel2);font-size:12px}
+tbody tr{cursor:pointer}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+td.name b{color:var(--txt)}
+td .code{color:var(--brand-d);font-weight:700}
+.prog{width:110px;height:7px;background:var(--chip);border-radius:5px;overflow:hidden;display:inline-block;vertical-align:middle}
+.prog>i{display:block;height:100%;background:var(--brand)}
+.progtxt{margin-left:8px;color:var(--muted);font-size:12px}
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
+.pill.green{background:rgba(18,183,106,.14);color:var(--green)}
+.pill.amber{background:rgba(247,144,9,.15);color:#b45f04}
+.pill.red{background:rgba(229,72,77,.14);color:var(--red)}
+.pill.gray{background:var(--chip);color:var(--muted)}
+.pill.blue{background:rgba(46,111,255,.13);color:var(--blue)}
+.tag{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700}
+.tag.todo{background:var(--chip);color:var(--muted)}
+.tag.doing{background:rgba(46,111,255,.13);color:var(--blue)}
+.tag.done{background:rgba(18,183,106,.15);color:var(--green)}
+.tag.over{background:#c0272c;color:#fff}
+.tag.risk{background:#e07a05;color:#fff}
+.margin.good{color:var(--green);font-weight:700}
+.margin.warn{color:#b45f04;font-weight:700}
+.margin.bad{color:var(--red);font-weight:700}
+.rowdel{cursor:pointer;color:var(--muted);font-size:15px;padding:4px;border-radius:6px}
+.rowdel:hover{background:rgba(229,72,77,.12);color:var(--red)}
+tbody tr.empty:hover{background:transparent}
+tbody tr.sel{background:rgba(0,220,135,.09)}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--brand-d);cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ptype{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px}
+.ptype.OP{background:rgba(0,220,135,.16);color:var(--brand-d)}
+.ptype.PDF{background:rgba(46,111,255,.14);color:var(--blue)}
+.ptype.DSCA{background:rgba(122,90,248,.14);color:var(--purple)}
+.ms-stage{display:inline-block;font-size:12px;color:var(--txt);background:var(--chip);padding:2px 9px;border-radius:20px}
+.view{display:none}
+.view.active{display:block}
+.alertbar{display:flex;align-items:center;gap:10px;background:rgba(229,72,77,.08);border:1px solid rgba(229,72,77,.3);color:#b23237;padding:11px 15px;border-radius:11px;margin-bottom:18px;font-size:13px}
+.alertbar.ok{background:rgba(18,183,106,.08);border-color:rgba(18,183,106,.3);color:#0a7a47}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap}
+.tabs a{padding:11px 16px;color:var(--muted);cursor:pointer;font-size:13.5px;border-bottom:2px solid transparent;font-weight:600}
+.tabs a:hover{color:var(--txt)}
+.tabs a.active{color:var(--brand-d);border-bottom-color:var(--brand)}
+.subview{display:none}
+.subview.active{display:block}
+.wbs{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:visible}
+.wbs-head{display:grid;grid-template-columns:2.2fr 1.2fr .7fr .8fr 1fr .5fr;padding:11px 16px;background:var(--panel2);color:var(--muted);font-size:12px;font-weight:600}
+/* 功能清單：功能與說明｜前端｜後端｜QA｜PJM｜總工時｜成本｜狀態｜刪除 */
+.fh{grid-template-columns:2.6fr .7fr .7fr .7fr .7fr .8fr 1.1fr 1.1fr .8fr}
+.wbs-grouphdr{display:grid;grid-template-columns:2.6fr .7fr .7fr .7fr .7fr .8fr 1.1fr 1.1fr .8fr;padding:7px 16px 0;background:var(--panel2)}
+.wbs-grouphdr .grp-label{grid-column:2 / 6;text-align:center;font-size:10.5px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:4px}
+.fin-kpi{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fin-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.fin-box .l{font-size:12.5px;color:#64748b;margin-bottom:6px}
+.fin-box .v{font-size:24px;font-weight:800;color:#64748b}
+.fin-box.dark{background:#0f172a;border-color:#0f172a}
+.fin-box.dark .l{color:#94a3b8} .fin-box.dark .v{color:#fff}
+.fin-result{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:16px}
+/* 功能範疇與報價：一體化 */
+.flat-sec{margin-bottom:4px}
+.wbs.flat{border:none;border-radius:0}
+.wbs.flat .wbs-head{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.linkbtn{color:var(--brand-d);font-weight:700;cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px}
+.linkbtn:hover{background:rgba(0,220,135,.1)}
+.fin-divider{height:1px;background:var(--line);margin:24px 0}
+.fin-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+.fin-subttl{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.btn-dash{width:100%;border:1px dashed var(--line);background:transparent;color:var(--brand-d);border-radius:8px;padding:9px;cursor:pointer;font-size:12.5px;margin-top:8px}
+.btn-dash:hover{border-color:var(--brand);background:rgba(0,220,135,.05)}
+.fin-card{background:#F1F5F9;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.fin-card.warn{border-color:#E53E3E;background:rgba(229,62,62,.06)}
+.fin-card .fc-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:9px}
+.fin-card .fc-row .grey{color:#64748b;font-weight:600} .fin-card .fc-row .mid{color:#0f172a;font-weight:700;font-size:15px}
+.fin-card .fc-focus{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
+.fin-card .fc-focus .fl{font-size:12.5px;color:var(--muted)}
+.fin-card .fc-focus .fv{font-size:24px;font-weight:800;margin-top:2px}
+/* 發票式財務結算流 */
+.fin-flow{max-width:none}
+.inv-cap{font-size:13px;font-weight:700;color:#0f172a;margin:2px 0 4px}
+.inv-row{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;font-size:15px;color:var(--muted);border-bottom:1px solid #f0f4f2}
+.inv-row b{font-size:18px;font-weight:700;color:#0f172a}
+.inv-row b.grey{color:#64748b;font-weight:600}
+.inv-row.edit{gap:12px}
+.inv-row .inv-name{flex:1}
+.inv-row .inv-amt{width:180px;text-align:right}
+.inv-hr{height:1px;background:var(--line);margin:16px 0 0}
+.inv-bottom{display:flex;justify-content:space-between;align-items:center;background:rgba(0,220,135,.055);border:1px solid rgba(0,220,135,.3);border-radius:12px;padding:20px 26px;margin-top:16px}
+.inv-bottom .lbl{font-size:13.5px;color:var(--muted);margin-bottom:4px}
+.inv-bottom .tot{font-size:23px;font-weight:800;color:#0f172a}
+.inv-margin{text-align:right;border-radius:10px;padding:4px 14px}
+.inv-margin.warn{background:rgba(229,62,62,.08);border:1px solid #E53E3E}
+.inv-margin .fv{font-size:30px;font-weight:800}
+.wbs-emptybox{text-align:center;padding:38px 10px;color:var(--muted)}
+.wbs-emptybox .ei{font-size:32px;opacity:.4}
+.wbs-emptybox .et{font-weight:700;color:var(--txt);margin-top:10px;font-size:14px}
+.wbs-emptybox .es{font-size:12.5px;margin-top:4px}
+.func-row{display:grid;grid-template-columns:2.6fr .7fr .7fr .7fr .7fr .8fr 1.1fr 1.1fr .8fr;gap:6px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.func-row:hover{background:var(--panel2)}
+.func-row.locked{background:#fafcfb}
+.func-row .fname input{margin-bottom:4px;font-weight:600}
+.func-row .fh-num{text-align:center;font-weight:700}
+.func-cost{font-weight:700;color:var(--brand-d)}
+.fname-view{position:relative;font-weight:700;cursor:default;padding:4px 0}
+.fname-view .lockdot{color:var(--green);font-size:11px;margin-right:5px}
+.desc-pop{display:none;position:absolute;left:0;top:100%;z-index:60;background:var(--brand-ink);color:#fff;padding:10px 13px;border-radius:9px;font-size:12.5px;font-weight:400;width:max-content;max-width:420px;box-shadow:0 10px 28px rgba(0,0,0,.22);margin-top:5px;white-space:normal;line-height:1.6;height:auto;overflow:visible}
+.fname-view:hover .desc-pop{display:block}
+.rowact{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.rowact .ed{cursor:pointer;color:var(--brand-d);font-size:14px;padding:4px;border-radius:6px}
+.rowact .ed:hover{background:rgba(0,220,135,.12)}
+.rowact .ok{cursor:pointer;color:#fff;background:var(--brand-d);font-size:12px;padding:4px 9px;border-radius:7px;font-weight:700}
+.mod-row{padding:12px 16px;border-top:1px solid var(--line);font-weight:700;display:flex;align-items:center;gap:9px;cursor:pointer}
+.mod-row .caret{transition:.2s;color:var(--muted)}
+.mod-row.open .caret{transform:rotate(90deg)}
+.sub-row{display:grid;grid-template-columns:2.2fr 1.2fr .7fr .8fr 1fr .5fr;padding:11px 16px 11px 30px;border-top:1px solid var(--line);align-items:center;cursor:pointer;background:var(--panel)}
+.sub-row:hover{background:var(--panel2)}
+.sub-row .caret{color:var(--muted);margin-right:6px;display:inline-block;transition:.2s}
+.sub-row.open .caret{transform:rotate(90deg)}
+.acc{display:none;background:var(--panel2)}
+.acc.open{display:block}
+.role-row{display:grid;grid-template-columns:2.2fr 1.2fr .7fr .8fr 1fr .5fr;padding:8px 16px 8px 46px;border-top:1px solid var(--line);align-items:center;font-size:13px;gap:6px}
+.rolechip{width:32px;text-align:center;font-size:10px;font-weight:700;padding:2px 0;border-radius:5px;flex:none}
+.rolechip.fe{background:rgba(46,111,255,.14);color:var(--blue)}
+.rolechip.be{background:rgba(122,90,248,.14);color:var(--purple)}
+.rolechip.qa{background:rgba(18,183,106,.15);color:var(--green)}
+.who{display:inline-flex;align-items:center;gap:6px}
+.miniava{width:22px;height:22px;border-radius:50%;background:var(--chip);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none}
+.cinp{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:12.5px;width:100%;outline:none;color:var(--txt)}
+.cinp:focus{border-color:var(--brand)}
+.cinp.num{text-align:center}
+.total-row{font-weight:700;background:var(--panel2);display:grid;grid-template-columns:2.2fr 1.2fr .7fr .8fr 1fr .5fr;padding:11px 16px}
+.link{color:var(--brand-d);cursor:pointer;text-decoration:underline dotted}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 4px 14px rgba(16,40,32,.035)}
+.panel h3{font-size:14px;margin-bottom:14px}
+.field{margin-bottom:13px}
+.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.field .inp,.field .sel{width:100%}
+.fval{padding:9px 2px;font-size:16px;font-weight:800;color:#0f172a}
+.pay{display:flex;gap:8px}
+.pay .seg{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px;text-align:center}
+.pay .seg .p{font-size:17px;font-weight:800;color:var(--brand-d)}
+.pay .seg .t{font-size:11px;color:var(--muted)}
+.sumrow{display:flex;justify-content:space-between;margin-bottom:9px}
+.sumrow span{color:var(--muted)}
+.miles{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.mile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:170px}
+.mile .mt{font-size:13px;font-weight:700;margin-bottom:5px}
+.mile .md{color:var(--muted);font-size:12px;margin-bottom:8px}
+.mbar{height:6px;background:var(--chip);border-radius:4px;overflow:hidden}
+.mbar>i{display:block;height:100%;background:var(--brand)}
+.notif{position:absolute;right:26px;top:60px;width:340px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(16,40,32,.16);z-index:50;display:none;overflow:hidden}
+.notif.open{display:block}
+.notif .nh{padding:12px 15px;font-weight:700;border-bottom:1px solid var(--line);font-size:13px}
+.notif .ni{padding:11px 15px;border-bottom:1px solid var(--line);font-size:12.5px;display:flex;gap:10px}
+.notif .ni:last-child{border-bottom:none}
+.notif .ni .d{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none}
+.notif .ni small{color:var(--muted);display:block;margin-top:3px}
+.filterbtn{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer}
+.filterbtn.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:700}
+.hint{color:var(--muted);font-size:12px;margin-top:6px}
+.modal-mask{position:fixed;inset:0;background:rgba(16,40,32,.42);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-mask.open{display:flex}
+.modal{background:var(--panel);border-radius:16px;width:620px;max-width:94vw;max-height:90vh;overflow:hidden;box-shadow:0 24px 60px rgba(16,40,32,.28);display:flex;flex-direction:column}
+.modal-h{padding:16px 20px;font-weight:800;font-size:16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-x{cursor:pointer;color:var(--muted);font-weight:400}
+.modal-b{padding:18px 20px;overflow:auto}
+.modal-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.fgrid .field{margin-bottom:0}
+.savebar{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:18px;box-shadow:0 1px 2px rgba(16,40,32,.04)}
+.savebar .st{color:var(--muted);font-size:12.5px}
+.gantt{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(16,40,32,.04)}
+.g-top{display:flex}
+.g-left{width:240px;flex:none;border-right:1px solid var(--line)}
+.g-right{flex:1;overflow-x:auto}
+.g-datehdr{display:flex;border-bottom:1px solid var(--line);background:var(--panel2)}
+.g-day{min-width:38px;flex:none;text-align:center;font-size:10.5px;color:var(--muted);padding:8px 0;border-right:1px solid var(--line)}
+.g-day.wk{background:var(--chip)}
+.g-day.today{background:rgba(0,220,135,.18);color:var(--brand-d);font-weight:700}
+.g-rowhdr{padding:11px 14px;border-bottom:1px solid var(--line);font-size:12.5px;height:44px;display:flex;align-items:center;gap:8px}
+.g-track{position:relative;height:44px;border-bottom:1px solid var(--line)}
+.g-track .cell{position:absolute;top:0;bottom:0;width:38px;border-right:1px solid var(--line)}
+.bar{position:absolute;top:11px;height:22px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;color:#fff;font-weight:600;overflow:hidden}
+.bar.fe{background:var(--blue)}.bar.be{background:var(--purple)}.bar.qa{background:var(--green)}
+.bar.over{background:var(--red)}.bar.risk{background:var(--amber);color:#3a2a00}
+.bar .fillwrap{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.32)}
+.legend{display:flex;gap:16px;padding:12px 16px;font-size:12px;color:var(--muted);flex-wrap:wrap;align-items:center}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.empty-box{text-align:center;padding:40px;color:var(--muted)}
+/* 分段篩選器 */
+.segmented{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px}
+.segmented .seg{border:none;background:transparent;color:var(--muted);padding:6px 15px;border-radius:7px;font-size:13px;cursor:pointer;font-weight:600}
+.segmented .seg.on{background:var(--brand);color:var(--brand-ink)}
+/* 里程碑時間軸 */
+.ms-empty{text-align:center;padding:26px}
+.ms-empty .ill{font-size:34px;opacity:.5}
+.ms-empty .t{color:var(--muted);margin:8px 0 14px;font-size:13px}
+.ms-track{display:flex;gap:0;overflow-x:auto;padding:14px 4px 4px;position:relative}
+.ms-node{flex:none;width:180px;position:relative;padding-right:10px}
+.ms-node .dot{width:26px;height:26px;border-radius:50%;background:var(--chip);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:800;border:2px solid var(--line);position:relative;z-index:2}
+.ms-node.done .dot{background:var(--green);color:#fff;border-color:var(--green)}
+.ms-node.cur .dot{border-color:var(--brand);color:var(--brand-d)}
+.ms-node .line{position:absolute;left:26px;top:13px;right:0;height:2px;background:var(--line);z-index:1}
+.ms-node .mt{font-weight:700;font-size:13px;margin-top:9px}
+.ms-node .md{color:var(--muted);font-size:11.5px;margin-top:2px}
+.ms-node .del{color:var(--muted);cursor:pointer;font-size:12px}
+.ms-node .del:hover{color:var(--red)}
+/* Gantt v2 */
+.g2{display:flex;position:relative;user-select:none}
+.g2-left{width:1180px;flex:none;border-right:1px solid var(--line);background:var(--panel)}
+.g2COLS{grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px}
+.g2-rowname{display:grid;grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px;gap:9px;padding:0 12px;align-items:center}
+.g2lh{display:grid;grid-template-columns:minmax(150px,1fr) 112px 138px 56px 138px 138px 116px 176px;gap:9px;padding:0 12px;color:var(--muted);font-size:11.5px;font-weight:700;align-items:center;height:34px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.g2-rowname .gbtns{display:flex;gap:4px;align-items:center;justify-content:flex-end}
+.g2lh span:nth-child(n+2){text-align:center}
+.g2-rowname .gd,.g2-rowname .ssel,.g2-rowname .tsel{text-align:center;text-align-last:center}
+.g2-rowname .endv{text-align:center;display:block}
+.g2-rowname .tcell{justify-content:center}
+.g2-rowname .dcol{justify-self:stretch}
+.g2-rowname .op{justify-self:center}
+.g2lh span{white-space:nowrap}
+.g2-rowname.group{background:var(--panel2);color:var(--txt);font-weight:800;border-left:3px solid var(--brand)}
+.g2-rowname .nm{display:flex;align-items:center;overflow:hidden;white-space:nowrap;gap:6px;min-width:0}
+.g2-rowname .nm .cin{flex:1;min-width:0}
+.g2-rowname .tcell{display:flex;align-items:center;gap:6px;min-width:0}
+.g2-rowname .tsw{width:12px;height:12px;border-radius:3px;flex:none}
+.g2-rowname .cin,.g2-rowname .gd,.g2-rowname .tsel,.g2-rowname .ssel{border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:12px;width:100%;min-width:0;box-sizing:border-box;background:#fff;color:var(--txt)}
+.g2-rowname .cin:focus,.g2-rowname .gd:focus,.g2-rowname .tsel:focus,.g2-rowname .ssel:focus{border-color:var(--brand);outline:none}
+.g2-rowname .ssel.st-done{color:var(--green);font-weight:700} .g2-rowname .ssel.st-doing{color:var(--blue);font-weight:700} .g2-rowname .ssel.st-todo{color:var(--muted)}
+.g2-rowname .dcol{color:var(--muted);font-size:12px;text-align:center;white-space:nowrap}
+.g2-rowname .op{color:var(--muted);cursor:pointer;text-align:center;font-size:13px;align-self:center}
+.g2-rowname .op:hover{color:var(--red)}
+.g2-rowname .gacts{grid-column:6 / 8;display:flex;gap:5px;align-items:center;justify-content:flex-end;white-space:nowrap}
+.g2-rowname .endv{color:var(--txt);font-weight:600}
+.g2-rowname.group .addc{cursor:pointer;font-size:10.5px;background:var(--panel);border:1px solid var(--line);color:var(--brand-d);border-radius:6px;padding:2px 6px;font-weight:700}
+.g2-rowname.group .addc:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.g2-addstage{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.g2bar.grp{background:rgba(0,181,111,.14)!important;border:1.5px solid var(--brand-d);height:12px;top:17px;font-size:0;cursor:default;border-radius:3px}
+.g2-right{flex:1;overflow-x:auto;position:relative}
+.g2-hdr{display:flex;border-bottom:1px solid var(--line);background:var(--panel2);height:34px;align-items:center}
+.g2-day{min-width:40px;flex:none;text-align:center;font-size:10.5px;color:var(--muted);border-right:1px solid var(--line);line-height:34px}
+.g2-day.wk{background:var(--chip)}
+.g2-day.today{background:rgba(0,220,135,.16);color:var(--brand-d);font-weight:700}
+.g2-rowname{height:46px;border-bottom:1px solid var(--line);font-size:12.5px}
+.g2-track{height:46px;border-bottom:1px solid var(--line);position:relative}
+.g2-track .todayline{position:absolute;top:0;bottom:0;width:2px;background:rgba(0,220,135,.5);z-index:1}
+.g2bar{position:absolute;top:11px;height:24px;border-radius:6px;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;padding:0 9px;cursor:grab;z-index:3;overflow:visible;white-space:nowrap}
+.g2bar.done{background:var(--green)} .g2bar.ontrack{background:var(--blue)}
+.g2bar.amber{background:var(--amber);color:#3a2a00} .g2bar.over{background:var(--red)}
+.g2bar .hres{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:4}
+.g2bar .hl{left:-1px} .g2bar .hr{right:-1px}
+.g2bar .anchor{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--brand-d);transform:translateY(-50%);display:none;cursor:crosshair;z-index:6}
+.g2bar .anchor.al{left:-6px} .g2bar .anchor.ar{right:-6px}
+.g2bar:hover .anchor{display:block}
+.g2bar.dim{opacity:.32}
+.g2ghost{position:absolute;top:11px;height:24px;border:2px dashed var(--muted);border-radius:6px;background:transparent;z-index:2;pointer-events:none}
+.g2ghost .lbl{position:absolute;top:-22px;left:0;background:var(--brand-ink);color:#fff;font-size:10.5px;padding:2px 7px;border-radius:6px;white-space:nowrap}
+#g2-svg{position:absolute;top:0;left:0;pointer-events:none;z-index:2;overflow:visible}
+/* 抽屜 */
+.drawer-mask{position:fixed;inset:0;background:rgba(16,40,32,.42);display:none;z-index:120}
+.drawer-mask.open{display:block}
+.drawer{position:absolute;right:0;top:0;bottom:0;width:400px;max-width:92vw;background:var(--panel);box-shadow:-14px 0 40px rgba(16,40,32,.2);display:flex;flex-direction:column;animation:slidein .22s ease}
+@keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.tabfoot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.tabsave{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.tabsave .st{color:var(--muted);font-size:12.5px}
+/* 成本追蹤模組 */
+#ct-card{position:relative;border-width:2px}
+#ct-card.warn{border-color:var(--amber)}
+#ct-card.danger{border-color:var(--red);box-shadow:0 0 0 3px rgba(229,72,77,.12)}
+.ct-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:10px 0 20px}
+.ct-card-k{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:15px 17px}
+.ct-card-k .lbl{color:#64748b;font-size:12px;margin-bottom:7px}
+.ct-card-k .v{font-size:19px;font-weight:800;color:#0f172a}
+.ct-card-k.hl-card{padding:14px 18px;border-width:2px}
+.ct-card-k .v.big{font-size:27px;font-weight:900;line-height:1.1}
+.hl-card.hl-green{background:rgba(16,185,129,.08);border-color:#10b981}
+.hl-card.hl-amber{background:rgba(245,158,11,.08);border-color:#f59e0b}
+.hl-card.hl-red{background:rgba(239,68,68,.08);border-color:#ef4444}
+.mg-green{color:#10b981} .mg-amber{color:#f59e0b} .mg-red{color:#ef4444} .mg-grey{color:#64748b}
+.ct-months{display:flex;flex-direction:column;gap:10px;max-height:340px;overflow:auto;padding:2px}
+.ct-row{border:1px solid #eef2f6;background:#fbfdfe;border-radius:10px;padding:12px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr 1.2fr 1.4fr auto;gap:8px;align-items:start}
+.ct-row .cc{display:flex;flex-direction:column;gap:3px}
+.ct-row .cc label{font-size:10.5px;color:#94a3b8}
+.ct-row .cinp{border-color:#e2e8f0;background:#fff}
+.ct-row .cinp:focus{border-color:var(--brand);box-shadow:0 0 0 2px rgba(0,220,135,.15)}
+.ct-hint{display:inline-block;background:#eef3f1;color:#64748b;border-radius:6px;padding:1px 6px;font-size:10px;align-self:flex-end;margin-top:1px}
+.ct-matrix td.base{color:#64748b}
+.ct-matrix td.actual b{font-weight:800;color:#0f172a}
+.ct-matrix .pcttxt{font-size:12px;font-weight:700}
+.ct-costsub{font-size:11px;color:#64748b;margin-top:3px}
+.ctag{border:1px solid transparent;border-radius:20px;padding:3px 9px;font-size:11.5px;font-weight:600;text-align:center;width:auto;outline:none;box-sizing:content-box}
+.ctag.blue{background:rgba(46,111,255,.13);color:var(--blue)}
+.ctag.green{background:rgba(18,183,106,.14);color:var(--green)}
+.ctag.purple{background:rgba(122,90,248,.14);color:var(--purple)}
+.ctag.gray{background:var(--chip);color:var(--txt)}
+.ctag:focus{border-color:var(--brand);background:#fff;color:var(--txt)}
+.ct-summary{display:flex;align-items:center;gap:18px;background:rgba(0,220,135,.055);border:1px solid rgba(0,220,135,.3);border-radius:12px;padding:16px 20px;margin-top:16px;font-size:13px}
+.ct-summary .ttl{font-weight:800}
+.ct-summary .tot{flex:1;text-align:center;font-size:14px}
+.ct-summary b{color:#0f172a;font-size:19px;margin-left:4px}
+.ct-summary .acts{display:flex;gap:8px}
+tr.ct-addrow:hover{background:transparent}
+tr.ct-addrow td{border-bottom:none;padding-top:10px}
+.ct-summary .acts span{cursor:pointer;font-size:15px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px 8px}
+.stagebtn{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12px;cursor:pointer;font-weight:700;width:100%}
+.stagebtn.pre{background:rgba(46,111,255,.12);color:var(--blue);border-color:transparent}
+.stagebtn.dev{background:rgba(0,220,135,.16);color:var(--brand-d);border-color:transparent}
+.ct-matrix{margin-top:18px}
+.ct-matrix table{width:100%;border-collapse:collapse}
+.ct-matrix th,.ct-matrix td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
+.ct-matrix th{background:var(--panel2);color:var(--muted);font-size:12px}
+.ct-actionbar{position:absolute;right:14px;bottom:12px;display:flex;gap:8px;opacity:.35;transition:.2s}
+#ct-card:hover .ct-actionbar{opacity:1}
+.ct-actionbar span{cursor:pointer;font-size:15px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brand-ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(16,40,32,.3);opacity:0;pointer-events:none;transition:.25s;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><span class="dot"></span> 專案管理系統</div>
+    <nav class="nav">
+      <div class="nav-group">戰情室</div>
+      <a class="active" onclick="go('dash')" id="nav-dash"><span class="ic">◎</span> 專案儀表板</a>
+      <div class="nav-group">專案管理</div>
+      <a onclick="go('master')" id="nav-master"><span class="ic">▦</span> 專案總覽</a>
+      <a class="subnav" onclick="goStatus('進行中')">進行中</a>
+      <a class="subnav" onclick="goStatus('維護中')">維護中</a>
+      <a class="subnav" onclick="goStatus('已完工')">已結案</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <div class="crumb" id="crumb">專案管理 / <b>專案總覽</b></div>
+      <div class="top-right">
+        <div class="bell" onclick="toggleNotif()">🔔<span class="badge" id="bellct">6</span></div>
+        <div class="avatar">PM</div>
+      </div>
+    </div>
+
+    <div class="notif" id="notif">
+      <div class="nh">通知中心 · 延遲預警</div>
+      <div class="ni"><span class="d" style="background:var(--red)"></span><div><b>🔴 逾期 (邏輯B)</b>：[FE] 訂單結帳頁 已超過預計完工日，仍未完工。<small>通知 前端負責人、PM</small></div></div>
+      <div class="ni"><span class="d" style="background:var(--amber)"></span><div><b>🟠 進度滯後 (邏輯C)</b>：[BE] 金流串接 工期已過 80%，回報進度偏低。<small>標記為有延遲風險</small></div></div>
+      <div class="ni"><span class="d" style="background:var(--amber)"></span><div><b>🟡 前置卡關 (邏輯C)</b>：後端 API 延遲 → 前端 / QA 時程條轉黃（受影響風險）。</div></div>
+    </div>
+
+    <div class="content">
+      <!-- ===== 專案儀表板（主管戰情室） ===== -->
+      <section class="view active" id="view-dash">
+        <h1>專案儀表板</h1>
+        <div class="pagesub">Project Dashboard · 主管視角，一覽所有專案的營運、財務與交付狀況</div>
+        <div class="kpis" id="dash-kpi" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><div class="lbl">專案總數</div><div class="val" id="d-total">0</div><div class="ktrend" id="d-total-sub"></div></div>
+          <div class="kpi"><div class="lbl">進行中</div><div class="val" id="d-active" style="color:var(--green)">0</div><div class="ktrend" id="d-active-sub"></div></div>
+          <div class="kpi"><div class="lbl">維護中</div><div class="val" id="d-maint" style="color:var(--blue)">0</div><div class="ktrend" id="d-maint-sub"></div></div>
+          <div class="kpi"><div class="lbl">已結案</div><div class="val" id="d-closed" style="color:var(--purple)">0</div><div class="ktrend" id="d-closed-sub"></div></div>
+        </div>
+        <div class="dash-grid">
+          <!-- 左：需要關注 -->
+          <div class="dcol">
+            <div class="dcard" style="min-height:420px">
+              <div class="dcard-hd"><h3>⚠️ 需要關注的專案</h3><span class="csub" style="margin:0">Risk &amp; Alerts</span></div>
+              <div id="d-risk"></div>
+            </div>
+          </div>
+          <!-- 中：狀態分布 + PJM 承接狀況 -->
+          <div class="dcol">
+            <div class="dcard">
+              <div class="dcard-hd"><h3>專案狀態分布</h3><span class="csub" style="margin:0" id="d-status-total">共 0 案</span></div>
+              <div class="donut-wrap">
+                <div id="d-donut"></div>
+                <div class="donut-legend" id="d-legend"></div>
+              </div>
+            </div>
+            <div class="dcard">
+              <div class="dcard-hd"><h3>PJM 專案承接狀況</h3><span class="csub" style="margin:0">By Manager</span></div>
+              <div id="d-pmload"></div>
+            </div>
+          </div>
+          <!-- 右：即將上線 + RD/QA 維運工時 -->
+          <div class="dcol">
+            <div class="dcard">
+              <div class="dcard-hd"><h3>📅 即將上線</h3><span class="csub" style="margin:0">Upcoming Launches</span></div>
+              <div id="d-upcoming"></div>
+            </div>
+            <div class="dcard">
+              <div class="dcard-hd"><h3>RD / QA 維運工時</h3><span class="csub" style="margin:0">實際投入 · 人日</span></div>
+              <div id="d-rdqa"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 專案總覽 ===== -->
+      <section class="view" id="view-master">
+        <h1>全專案總覽看板</h1>
+        <div class="pagesub">Master Dashboard · 各專案財務、工時與里程碑一覽（欄位由各專案設定即時運算）</div>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi"><div class="lbl">進行中專案</div><div class="val" id="k-active">0</div></div>
+          <div class="kpi"><div class="lbl">維護中專案</div><div class="val" id="k-maint">0</div></div>
+          <div class="kpi"><div class="lbl">毛利警示專案</div><div class="val" id="k-warn" style="color:var(--red)">0</div></div>
+        </div>
+        <div class="toolbar">
+          <input class="inp" id="q" placeholder="🔍 搜尋代碼 / 名稱 / PJM" oninput="renderMaster()">
+          <select class="sel" id="f-status" onchange="renderMaster()">
+            <option value="">全部狀態</option><option>未開始</option><option>進行中</option><option>維護中</option><option>已完工</option>
+          </select>
+          <button class="filterbtn" id="f-margin" onclick="this.classList.toggle('on');renderMaster()">⚠️ 僅顯示毛利警示</button>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="del-sel" disabled style="color:var(--red);border-color:rgba(229,72,77,.4)" onclick="deleteSelected()">🗑 刪除選取 (0)</button>
+          <button class="btn" onclick="addProjectDirect()">+ 新增專案</button>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead id="master-head"></thead>
+            <tbody id="master-body"></tbody>
+          </table>
+        </div>
+        <div class="hint">💡 點任一列進入專案工作區設定所有資料；成本、毛利、進度、里程碑會自動回填此總覽。</div>
+      </section>
+
+      <!-- ===== 專案工作區 ===== -->
+      <section class="view" id="view-project">
+        <div class="alertbar" id="proj-alert"></div>
+        <div class="proj-head">
+          <div style="min-width:0"><h1 id="proj-title"></h1><div class="pagesub" id="proj-sub" style="margin-bottom:0"></div></div>
+          <div class="proj-cta"><button class="btn ghost sm" onclick="go('master')">取消</button><button class="btn sm" onclick="go('master')">儲存並返回</button></div>
+        </div>
+        <div class="tabs">
+          <a onclick="tab('overview')" id="tab-overview">基本資料</a>
+          <a onclick="tab('scope')" id="tab-scope">功能範疇與報價</a>
+          <a onclick="tab('costtrack')" id="tab-costtrack">成本計算追蹤表</a>
+          <a onclick="tab('timeline')" id="tab-timeline">時程與里程碑</a>
+          <a onclick="tab('deliverables')" id="tab-deliverables">交付文件</a>
+
+        </div>
+
+        <!-- 基本資料 -->
+        <div class="subview" id="sub-overview">
+          <div class="ov-grid">
+            <div class="panel">
+              <div class="ph"><h3>基本資訊</h3></div>
+              <div class="fgrid">
+                <div class="field"><label>專案編號 (Project ID)</label><input class="inp" id="e-code" placeholder="例：KP-2026-001" onchange="setCode(this.value)"></div>
+                <div class="field"><label>專案名稱</label><input class="inp" id="e-name" placeholder="請輸入專案名稱…" oninput="setF('name',this.value)"></div>
+                <div class="field"><label>產品類型</label><select class="sel" id="e-type" onchange="setF('type',this.value)"><option value="">請選擇產品類型</option><option value="OP">OP · On premise</option><option value="PDF">PDF · KDAN PDF</option><option value="DSCA">DSCA · 憑證串接</option></select></div>
+                <div class="field"><label>專案負責人</label><input class="inp" id="e-pjm" placeholder="指派負責人" oninput="setF('pjm',this.value)"></div>
+                <div class="field"><label>當前進度 / 里程碑　<span class="lockic" title="依里程碑進度與今日日期自動判定，無法手動修改">🔒</span></label><input class="inp ro" id="e-ms" disabled placeholder="尚未開始"></div>
+                <div class="field"><label>狀態</label><select class="sel" id="e-status" onchange="setF('status',this.value)"><option>未開始</option><option>進行中</option><option>維護中</option><option>已完工</option></select></div>
+                <div class="field"><label>預計起始日</label><input class="inp" id="e-start" type="date" onchange="setDate('start',this.value)"></div>
+                <div class="field"><label>預計完工日</label><input class="inp" id="e-launch" type="date" onchange="setDate('launch',this.value)"></div>
+                <div class="field"><label>對外報價 (合約價)</label><input class="inp num-r" id="e-quote-basic" type="number" placeholder="0" oninput="onQuote(this.value)"></div>
+                <div class="field"><label>已發生實際成本</label><input class="inp num-r ro" id="e-cost" disabled></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="ph"><h3>專案健康度</h3></div>
+              <div class="kpibig"><div class="lbl">目前實際成本</div><div class="v" id="o-act">—</div></div>
+              <div class="kpibig" id="o-am-wrap"><div class="lbl">當前毛利率</div><div class="v" id="o-am">—</div><div id="o-am-tag"></div></div>
+              <div class="kpibig"><div class="lbl">專案總進度</div><div class="v vsm" id="o-prog">—</div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:10px"><div class="prog" style="flex:1"><i id="o-progbar" style="width:0"></i></div><b id="o-progpct" style="font-size:13px;color:var(--brand-d)">0%</b></div></div>
+            </div>
+          </div>
+          <!-- 團隊分組與甘特圖顏色 -->
+          <div class="grid2" style="margin-top:18px">
+            <div class="panel">
+              <div class="ph ph-act"><h3>團隊分組與甘特圖顏色 <span class="qic" title="此處團隊即為甘特圖時程表的團隊選項與色條，以及「按團隊篩選」的來源。">?</span></h3><button class="btn ghost sm" onclick="addTeam()">+ 新增分組</button></div>
+              <div class="tablewrap"><table><thead><tr><th>分組名稱</th><th style="width:110px">識別色</th><th style="width:44px"></th></tr></thead><tbody id="team-body"></tbody></table></div>
+            </div>
+            <div class="panel">
+              <div class="ph ph-act"><h3>專案成員與權限</h3><button class="btn ghost sm" onclick="addMember()">+ 新增成員</button></div>
+              <div class="tablewrap"><table><thead><tr><th style="width:130px">專案角色 / 職掌</th><th>姓名</th><th>電子信箱</th><th style="width:44px"></th></tr></thead><tbody id="member-body"></tbody></table></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 功能範疇與報價 -->
+        <div class="subview" id="sub-scope">
+          <div class="flat-sec">
+            <div class="ph ph-act"><h3>專案範疇與估算 <span class="qic" title="人力配置以「人日」估算；內部預估成本 = 總人日 × 日薪 5,000。">?</span></h3><span class="linkbtn" onclick="addFunc()">+ 新增功能項目</span></div>
+            <div class="wbs flat">
+              <div class="wbs-grouphdr"><div></div><div class="grp-label">人力配置 (人日)</div><div></div><div></div><div></div></div>
+              <div class="wbs-head fh"><div>功能與說明</div><div>前端</div><div>後端</div><div>QA</div><div>PJM</div><div>總人日</div><div>內部預估成本</div><div>狀態</div><div></div></div>
+              <div id="wbs-body"></div>
+              <div class="total-row fh" style="padding:12px 16px"><div style="color:var(--muted);font-weight:600">內部預估總成本</div><div></div><div></div><div></div><div></div><div></div><div style="text-align:right"><b id="wbs-cost" style="font-size:16px;color:#0f172a">NT$ 0</b></div><div></div><div></div></div>
+            </div>
+          </div>
+          <div class="fin-divider"></div>
+          <div class="fin-flow">
+            <div class="fin-subttl" style="margin-bottom:10px">專案財務結算 (Financial Summary)</div>
+            <div class="inv-cap">成本項目明細</div>
+            <div class="inv-row"><span>內部人力預估成本 <span class="lockic" title="由上方範疇表自動加總">🔒</span></span><b class="grey" id="f-intest-inp">NT$ 0</b></div>
+            <div id="othercost-body"></div>
+            <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center">
+              <span class="linkbtn" onclick="addOtherCost()">+ 新增其他支出項目</span>
+              <button class="btn ghost sm" onclick="saveTab('功能範疇與報價')">💾 儲存項目</button>
+            </div>
+            <div class="inv-hr"></div>
+            <div class="inv-bottom">
+              <div><div class="lbl">合約總金額</div><b class="tot" id="e-quote">NT$ 0</b></div>
+              <div><div class="lbl">總預估成本</div><b class="tot" id="f-totest">—</b></div>
+              <div class="inv-margin" id="fin-card"><div class="lbl">預估毛利率</div><div class="fv margin" id="f-em">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 專案成本計算追蹤表 -->
+        <div class="subview" id="sub-costtrack">
+          <div class="panel" id="ct-card">
+            <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📊 專案成本計算追蹤表</h3><span class="hint" style="margin:0">變更即時連動運算，無需手動計算</span></div>
+            <!-- 頂部 KPI 磚 -->
+            <div class="ct-kpi" style="grid-template-columns:repeat(5,1fr)">
+              <div class="ct-card-k"><div class="lbl">專案報價</div><div class="v" id="ct-quote-v">—</div></div>
+              <div class="ct-card-k"><div class="lbl">總預估成本</div><div class="v" id="ct-estcost-k">—</div></div>
+              <div class="ct-card-k"><div class="lbl">實際成本</div><div class="v" id="ct-actcost-k">—</div></div>
+              <div class="ct-card-k"><div class="lbl">專案當前收益</div><div class="v" id="ct-profit">—</div></div>
+              <div class="ct-card-k hl-card" id="ct-margin-card"><div class="lbl">目前毛利率</div><div class="v big" id="ct-margin">—</div></div>
+            </div>
+            <!-- 中段 月份工時 -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <b style="font-size:13.5px">月份工時明細（工時 hr，後台自動 ÷8 換算人日）</b>
+              <button class="btn sm" onclick="ctAddMonth()">＋ 新增月份工時</button>
+            </div>
+            <div class="ct-months" id="ct-months"></div>
+            <!-- 底部 對比矩陣 -->
+            <div class="ct-matrix">
+              <table>
+                <thead><tr><th style="width:26%">項目名稱</th><th style="width:11%">費用類型</th><th style="width:20%">實際成本</th><th>備註說明</th><th style="width:64px">操作</th></tr></thead>
+                <tbody id="ct-cats-body"></tbody>
+              </table>
+              <div class="ct-summary">
+                <span class="ttl">📊 總成本合計</span>
+                <span class="tot">總實際成本：<b id="ct-act-total">NT$ 0</b></span>
+                <span class="acts"><span title="儲存變更" onclick="saveTab('成本計算追蹤表')">💾</span><span title="變更日誌" onclick="alert('變更日誌（Demo）')">📜</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 時程與里程碑 -->
+        <div class="subview" id="sub-timeline">
+          <!-- 里程碑 -->
+          <div class="panel" style="margin-bottom:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3 style="margin:0">🎯 里程碑 (Milestones)</h3><span class="hint" style="margin:0">於下方甘特圖階段點「🎯里程碑」建立，依時間自動排序</span></div>
+            <div id="ms-timeline"></div>
+          </div>
+          <!-- 篩選 -->
+          <div class="toolbar">
+            <span style="color:var(--muted);font-size:12.5px">按團隊篩選：</span>
+            <div class="segmented" id="tl-filter"></div>
+            <span class="spacer"></span>
+            <span class="hint" style="margin:0">子任務可於左側逐一設定 START/END（自動算工作日）；拖曳任務條改期／縮放，hover 端點拉線建立依賴（下游自動向後對齊）。父階段時間為自動彙總。</span>
+          </div>
+          <!-- 甘特圖 -->
+          <div class="panel" id="gantt-card" style="padding:0;overflow:hidden">
+            <div class="g2-addstage"><b style="font-size:13px">📅 甘特圖時程表（可編輯）</b><button class="btn sm" onclick="tlAddStage()">＋ 新增階段</button></div>
+            <div class="g2" id="g2"></div>
+            <div class="legend" style="border-top:1px solid var(--line)">
+              <span><span class="sw" style="background:var(--green)"></span>已完成</span>
+              <span><span class="sw" style="background:var(--blue)"></span>進行中</span>
+              <span><span class="sw" style="background:var(--amber)"></span>風險預警</span>
+              <span><span class="sw" style="background:var(--red)"></span>嚴重逾期</span>
+              <span style="color:var(--brand-d)">▎今日</span>
+              <span style="margin-left:8px;color:var(--muted)">團隊色條：</span>
+              <span id="legend-teams"></span>
+            </div>
+          </div>
+          <div class="tabfoot"><button class="btn ghost sm" onclick="go('master')">返回總覽</button><button class="btn sm" onclick="tlSaveExit()">💾 儲存時程與里程碑</button></div>
+        </div>
+        <!-- 里程碑抽屜 -->
+        <div class="drawer-mask" id="ms-drawer"><div class="drawer">
+          <div class="modal-h">新增里程碑<span class="modal-x" onclick="tlCloseDrawer()">✕</span></div>
+          <div class="modal-b">
+            <div class="field"><label>里程碑名稱 *</label><input class="inp" id="ms-title" style="width:100%"></div>
+            <div class="field"><label>綁定任務（期限自動鎖定該任務 ETA，完成後自動點亮）</label><select class="sel" id="ms-assoc" style="width:100%" onchange="tlMsBindPreview()"></select></div>
+            <div class="field"><label>自動鎖定期限 (ETA)</label><div class="fval" id="ms-deadline-v" style="font-size:14px">—</div></div>
+            <div id="ms-err" style="color:var(--red);font-size:12.5px;min-height:15px"></div>
+          </div>
+          <div class="modal-f"><button class="btn ghost" onclick="tlCloseDrawer()">取消</button><button class="btn" onclick="tlSaveMs()">新增</button></div>
+        </div></div>
+
+        <!-- 交付文件 -->
+        <div class="subview" id="sub-deliverables">
+          <div class="panel">
+            <h3>📄 專案交付文件 (SOW Deliverables) <span id="deliv-count" style="font-weight:400;color:var(--muted);font-size:12.5px"></span></h3>
+            <div class="tablewrap"><table><thead><tr><th>交付項目</th><th>負責單位</th><th>狀態</th><th>預計完成</th><th>實際完成</th><th>文件連結</th><th></th></tr></thead><tbody id="deliv-body"></tbody></table></div>
+            <button class="btn ghost sm" style="margin-top:12px" onclick="addDeliv()">+ 新增交付項目</button>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 新增專案 Modal -->
+<div class="modal-mask" id="add-mask">
+  <div class="modal">
+    <div class="modal-h">＋ 新增專案<span class="modal-x" onclick="closeAdd()">✕</span></div>
+    <div class="modal-b">
+      <p class="hint" style="margin:0 0 14px">先建立基本識別資料，建立後直接進入專案工作區設定所有內容（WBS、成本、時程、交付文件、團隊角色）。</p>
+      <div class="fgrid">
+        <div class="field"><label>專案代碼 *</label><input class="inp" id="a-code"></div>
+        <div class="field"><label>專案名稱 *</label><input class="inp" id="a-name"></div>
+        <div class="field"><label>產品類型 *</label><select class="sel" id="a-type" style="width:100%"><option value="OP">OP · On premise</option><option value="PDF">PDF · KDAN PDF</option><option value="DSCA">DSCA · 憑證串接</option></select></div>
+        <div class="field"><label>負責人 (PJM) *</label><input class="inp" id="a-pjm"></div>
+      </div>
+      <div id="a-err" style="color:var(--red);font-size:12.5px;min-height:16px;margin-top:8px"></div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" onclick="closeAdd()">取消</button><button class="btn" onclick="saveAdd()">建立並進入設定</button></div>
+  </div>
+</div>
+
+<script>
+const RATE=5000; // 日薪成本（每人日 NT$ 5,000）
+const fmt = n => "NT$ "+Math.round(n).toLocaleString();
+const roleLbl={fe:"前端",be:"後端",qa:"QA"};
+const stTag={todo:["todo","未進行"],doing:["doing","進行中"],done:["done","確認完工"],over:["over","已逾期"],risk:["risk","風險滯後"]};
+
+/* ---------------- 示範資料 ---------------- */
+function boaiWBS(){return [
+  {name:"Callback 回傳任務狀態", desc:"同意書編號、病人姓名、病例號、身分證號、簽署角色/裝置/時間", fe:6, be:16, qa:6, pjm:2, st:"doing", locked:true},
+  {name:"Show task detail 支援欄位資料回傳", desc:"可支援 API 用範本建立任務客製化參數回傳值", fe:4, be:10, qa:4, pjm:1, st:"todo", locked:true},
+  {name:"Create template 支援欄位資料回傳設定", desc:"欄位 ID：文字/超連結/選擇鈕/核取方塊，可預填帶入並顯示於簽署文件", fe:12, be:14, qa:6, pjm:2, st:"doing", locked:true},
+  {name:"Create task from template 支援預填欄位", desc:"新增可帶入欄位：文字/超連結/選擇鈕/核取方塊", fe:8, be:8, qa:4, pjm:1, st:"todo", locked:true},
+  {name:"桓竑 SDK 整合", desc:"整合桓竑 SDK 進點點簽", fe:6, be:20, qa:8, pjm:2, st:"risk", locked:true},
+  {name:"支援讀取 PDF 欄位資訊", desc:"PDF 解析欄位標記、命名規則與例外處理（Create/Update template 新 API）", fe:10, be:24, qa:10, pjm:3, st:"todo", locked:true},
+  {name:"錄影簽名功能", desc:"欄位動態顯示/隱藏連動規則；支援日期/文字/簽名/選擇鈕/核取方塊", fe:14, be:12, qa:8, pjm:2, st:"over", locked:true},
+];}
+function boaiCosts(){return [
+  {name:"AWS 雲端費用（Q2）", type:"第三方服務", amount:96000, note:"EC2 + RDS + S3"},
+  {name:"HIS 串接外包", type:"外包費用", amount:150000, note:"IHH 協作"},
+  {name:"設計 SaaS 授權", type:"軟體授權", amount:43000, note:"Figma 年費分攤"},
+];}
+function boaiDeliv(){return [
+  {item:"工作執行說明書 (SOW)", team:"凱鈿", st:"done", eta:"2026/06/23", af:"2026/06/25", link:"SOW_v1.pdf"},
+  {item:"點點簽功能規格書", team:"凱鈿", st:"done", eta:"2026/06/30", af:"2026/06/30", link:"spec_dottedsign.pdf"},
+  {item:"客製功能需求規格書", team:"凱鈿", st:"doing", eta:"2026/07/06", af:"", link:"spec_custom_draft.pdf"},
+  {item:"點點簽 RESTful API 文件", team:"凱鈿", st:"doing", eta:"2026/09/15", af:"", link:""},
+  {item:"系統部署設定手冊", team:"凱鈿", st:"todo", eta:"2026/11/03", af:"", link:""},
+  {item:"系統維護管理手冊", team:"凱鈿", st:"todo", eta:"2026/11/13", af:"", link:""},
+  {item:"系統整合測試計畫 / 報告書", team:"凱鈿", st:"todo", eta:"2026/11/06", af:"", link:""},
+  {item:"系統壓力測試報告書", team:"凱鈿", st:"todo", eta:"2026/11/06", af:"", link:""},
+  {item:"教育訓練手冊", team:"凱鈿", st:"todo", eta:"2026/11/13", af:"", link:""},
+];}
+const ROLE_OPTS=['前端','後端','PJM','BD','外包','SI廠商','經銷商'];
+function boaiMembers(){return [
+  {role:'BD', name:'Joanne', email:'joanne@kdan.com'},
+  {role:'PJM', name:'Cathy', email:'cathy@kdan.com'},
+  {role:'PJM', name:'Leo', email:'leo@ihh.com'},
+  {role:'後端', name:'Nick', email:'nick@kdan.com'},
+  {role:'前端', name:'Jay', email:'jay@kdan.com'},
+  {role:'後端', name:'Jenny', email:'jenny@kdan.com'},
+  {role:'外包', name:'安慶', email:'anqing@vendor.com'},
+];}
+function boaiGantt(){return [
+  {name:"2.3 HIS API (BE)", role:"be", who:"Nick", start:2, len:6, prog:75, state:"over", label:"逾期"},
+  {name:"2.1 電子簽署 (FE)", role:"fe", who:"Jay", start:8, len:5, prog:65, state:"ok", label:""},
+  {name:"2.2 簽署確認頁 (FE)", role:"fe", who:"Jay", start:11, len:8, prog:0, state:"over", label:"今日未開工"},
+  {name:"2.3 HIS API (QA)", role:"qa", who:"Jenny", start:12, len:4, prog:0, state:"blocked", label:""},
+  {name:"金流/簽章串接 (BE)", role:"be", who:"Nick", start:7, len:12, prog:40, state:"risk", label:"進度滯後"},
+];}
+function boaiMiles(){return [
+  {t:"UI/UX 交付", date:"2026/06/12", p:100, c:"var(--brand)"},
+  {t:"客製功能開發", date:"2026/09/14", p:55, c:"var(--amber)"},
+  {t:"UAT 雲端驗收", date:"2026/11/17", p:5, c:"var(--brand)"},
+  {t:"系統正式上線", date:"2026/11/23", p:0, c:"var(--brand)"},
+];}
+
+function boaiTL(){ const D=iso=>toIdx(iso); return {tasks:[
+  {id:'G1',group:true,name:'合約規格確認'},
+  {id:'C1',parent:'G1',name:'合約審閱/簽約日',team:'fuji',s:D('2026-03-03'),e:D('2026-05-15'),af:D('2026-05-15')},
+  {id:'C2',parent:'G1',name:'需求訪談/初步需求規格書',team:'kaidan',s:D('2026-04-01'),e:D('2026-04-10'),af:D('2026-04-08')},
+  {id:'C3',parent:'G1',name:'正式開案日(開案信)',team:'kaidan',s:D('2026-05-18'),e:D('2026-05-18'),af:D('2026-05-18')},
+  {id:'C4',parent:'G1',name:'需求規格書撰寫/回簽確認',team:'kaidan',s:D('2026-05-18'),e:D('2026-05-27'),af:D('2026-05-25')},
+  {id:'G2',group:true,name:'開發/測試/正式系統環境建置'},
+  {id:'C5',parent:'G2',name:'內部測試環境部署',team:'kaidan',s:D('2026-05-27'),e:D('2026-05-29'),af:D('2026-06-01')},
+  {id:'C6',parent:'G2',name:'客戶測試環境部署',team:'kaidan',s:D('2026-05-29'),e:D('2026-06-02'),af:D('2026-05-18')},
+  {id:'C7',parent:'G2',name:'客戶正式環境部署',team:'wufu',s:D('2026-06-02'),e:D('2026-06-04'),af:null},
+  {id:'G3',group:true,name:'客製功能開發'},
+  {id:'C8',parent:'G3',name:'部署前後端分離 - 後端',team:'kaidan',s:D('2026-05-27'),e:D('2026-05-29'),af:D('2026-05-18')},
+  {id:'C9',parent:'G3',name:'PDF 檔案密碼加密與自簽憑證壓印機制',team:'kaidan',s:D('2026-06-05'),e:D('2026-06-29'),af:D('2026-05-18')},
+  {id:'C10',parent:'G3',name:'功能開發 - 測試',team:'kaidan',s:D('2026-06-29'),e:D('2026-07-07'),af:D('2026-07-02')},
+  {id:'G4',group:true,name:'系統功能測試'},
+  {id:'C11',parent:'G4',name:'系統功能測試計畫書撰寫',team:'kaidan',s:D('2026-06-29'),e:D('2026-07-01'),af:null},
+  {id:'G5',group:true,name:'系統整合測試(SIT)'},
+  {id:'C12',parent:'G5',name:'SIT 系統整合測試',team:'wufu',s:D('2026-07-08'),e:D('2026-07-21'),af:null},
+  {id:'C13',parent:'G5',name:'系統整合測試報告',team:'wufu',s:D('2026-07-13'),e:D('2026-07-16'),af:null},
+  {id:'G6',group:true,name:'使用者測試(UAT)'},
+  {id:'C14',parent:'G6',name:'UAT 測試',team:'wufu',s:D('2026-07-22'),e:D('2026-08-04'),af:null},
+  {id:'C15',parent:'G6',name:'UAT 測試問題修正與調整',team:'wufu',s:D('2026-07-23'),e:D('2026-07-29'),af:null},
+  {id:'G7',group:true,name:'系統安全掃描'},
+  {id:'C16',parent:'G7',name:'弱點掃描',team:'kaidan',s:D('2026-08-04'),e:D('2026-08-17'),af:null},
+  {id:'C17',parent:'G7',name:'弱點掃描問題修正&測試',team:'kaidan',s:D('2026-08-04'),e:D('2026-08-11'),af:null},
+  {id:'G8',group:true,name:'正式上線'},
+  {id:'C18',parent:'G8',name:'教育訓練',team:'kaidan',s:D('2026-08-18'),e:D('2026-08-20'),af:null},
+  {id:'C19',parent:'G8',name:'系統正式上線',team:'wufu',s:D('2026-08-24'),e:D('2026-08-24'),af:null},
+], deps:[{p:'C10',s:'C12'},{p:'C12',s:'C13'},{p:'C12',s:'C14'},{p:'C14',s:'C15'},{p:'C14',s:'C16'},{p:'C16',s:'C17'},{p:'C16',s:'C18'},{p:'C18',s:'C19'}]}; }
+function mk(o){ // 建立完整專案物件，附預設可編輯資料
+  return Object.assign({
+    type:"OP", pjm:"", ms:"需求規劃", launch:"未定", start:"", status:"未開始",
+    quote:0, target:45, otherCosts:[],
+    wbs:[], costs:[], deliv:[], members:[], gantt:[], miles:[], teams:defaultTeams(),
+    tl:{tasks:[], deps:[]},
+    ltrack:{months:[], cats:defaultCats()}
+  }, o);
+}
+function DEMO(){
+  const boai = mk({code:"KP-2024-018", name:"博愛 HIS 電子簽名整合", type:"OP", pjm:"Cathy", ms:"客製功能開發",
+    launch:"2026/11/23", start:"2026/06/22", status:"進行中", quote:3200000, target:45,
+    otherCosts:[{name:'AWS 雲端費用',amount:96000},{name:'外包費用',amount:150000},{name:'軟體授權',amount:43000}],
+    wbs:boaiWBS(), costs:boaiCosts(), deliv:boaiDeliv(), members:boaiMembers(),
+    tl:boaiTL(),
+    miles:[{t:'UAT 驗收', assoc:'C14'},{t:'系統正式上線', assoc:'C19'}],
+    ltrack:{months:[
+      {month:"2026-06", stage:"pre", pjm:16, rd:24, qa:8, fae:4, misc:20000, note:"開案前需求訪談與規格"},
+      {month:"2026-07", stage:"dev", pjm:8, rd:32, qa:8, fae:0, misc:15000, note:"客製功能開發"},
+    ], cats:[
+      {name:'內部人力成本', type:'人力', kind:'internal', est:130000, cost:0, note:''},
+      {name:'外部人力成本', type:'人力', kind:'labor', est:200000, usage:30, cost:150000, note:'IHH 外包協作'},
+      {name:'外購網路服務', type:'服務', kind:'service', est:96000, cost:96000, note:'AWS 雲端與 SaaS'},
+    ]}});
+  // 其餘專案：僅基本 + 靜態成本（無 WBS，成本用 estFixed/actFixed）
+  const others=[
+    {code:"KP-2024-021", name:"SaaS 後台儀表板", type:"DSCA", pjm:"Leo", ms:"Beta 驗收", launch:"2026/09/01", status:"進行中", quote:5400000, estFixed:3100000, actFixed:2050000, progFixed:72},
+    {code:"KP-2024-009", name:"物流追蹤 App", type:"PDF", pjm:"Nina", ms:"正式上線", launch:"2026/07/20", status:"進行中", quote:2800000, estFixed:2350000, actFixed:2260000, progFixed:96},
+    {code:"KP-2024-025", name:"企業官網重構", type:"DSCA", pjm:"Sam", ms:"UI/UX 交付", launch:"2026/10/05", status:"進行中", quote:980000, estFixed:520000, actFixed:110000, progFixed:18},
+    {code:"KP-2023-112", name:"POS 系統整合", type:"PDF", pjm:"Cathy", ms:"維運中", launch:"已上線 2026/03/10", status:"維護中", quote:4200000, estFixed:2600000, actFixed:2540000, progFixed:100},
+    {code:"KP-2024-030", name:"AI 客服 Chatbot", type:"OP", pjm:"Nina", ms:"需求規劃", launch:"2026/11/30", status:"未開始", quote:3600000, estFixed:2000000, actFixed:0, progFixed:0},
+    {code:"KP-2024-014", name:"金融風控報表", type:"PDF", pjm:"Leo", ms:"Beta 驗收", launch:"2026/08/05", status:"進行中", quote:4400000, estFixed:3350000, actFixed:3180000, progFixed:88},
+    {code:"KP-2023-088", name:"官網 SEO 維運", type:"DSCA", pjm:"Sam", ms:"維運中", launch:"已上線 2025/12/01", status:"維護中", quote:1200000, estFixed:640000, actFixed:590000, progFixed:100},
+  ].map(mk);
+  return [boai, ...others];
+}
+
+/* ---------------- 運算 ---------------- */
+function fnTotal(f){ return (+f.fe||0)+(+f.be||0)+(+f.qa||0)+(+f.pjm||0); }
+const ST_FACTOR={done:1, doing:.5, risk:.4, over:.3, todo:0}; // 依狀態推估實際完成工時
+function intEstH(p){ return (p.wbs||[]).reduce((a,f)=>a+fnTotal(f),0); }
+function intActH(p){ return (p.wbs||[]).reduce((a,f)=>a+Math.round(fnTotal(f)*(ST_FACTOR[f.st]??0)),0); }
+function extActual(p){ return (p.costs||[]).reduce((a,c)=>a+(+c.amount||0),0); }
+function otherTotal(p){ return (p.otherCosts||[]).reduce((a,c)=>a+(+c.amount||0),0); }
+function estCost(p){ return (p.wbs&&p.wbs.length)||(p.costs&&p.costs.length)||(p.otherCosts&&p.otherCosts.length) ? intEstH(p)*RATE+otherTotal(p) : (p.estFixed||0); }
+function actCost(p){ return (p.wbs&&p.wbs.length)||(p.costs&&p.costs.length) ? intActH(p)*RATE+extActual(p) : (p.actFixed||0); }
+function progOf(p){ if(p.wbs&&p.wbs.length){ const e=intEstH(p); return e? Math.min(100,Math.round(intActH(p)/e*100)):0; } return p.progFixed||0; }
+function estMargin(p){ return p.quote? (p.quote-estCost(p))/p.quote*100 : 0; }
+function actMargin(p){ return p.quote? (p.quote-actCost(p))/p.quote*100 : 0; }
+function marginCls(m){ return m>=40?"good": m>=30?"warn":"bad"; }
+/* 里程碑：進度=100% 且 今天已過該里程碑日期 → 視為完成，往下推進 */
+const TODAY_D=new Date();
+function parseD(s){ const m=(s||"").match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/); return m? new Date(+m[1],+m[2]-1,+m[3]) : null; }
+function toISO(s){ const d=parseD(s); return d? d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0') : ""; }
+function fromISO(v){ return v? v.replace(/-/g,"/") : ""; }
+function msDone(m){ const d=parseD(m.date); return m.p>=100 && d && d<=TODAY_D; }
+function currentMilestone(p){
+  if(p.miles&&p.miles.length&&p.tl){
+    tlRollup(p.tl); const st=tlStatuses(p.tl); const by={}; (p.tl.tasks||[]).forEach(t=>by[t.id]=t);
+    const sorted=[...p.miles].sort((a,b)=>((by[a.assoc]?by[a.assoc].e:9999)-(by[b.assoc]?by[b.assoc].e:9999)));
+    // 通過條件：狀態已完成 且 今日已過該階段預計完成日
+    const done=m=>{ if(m.assoc&&by[m.assoc]){ const bt=by[m.assoc]; return st[m.assoc]==='done' && G_TODAY>=bt.e; } return msDone(m); };
+    for(const m of sorted){ if(!done(m)) return m.t; }
+    return sorted[sorted.length-1].t+"（已完成）";
+  }
+  return p.ms||'—';
+}
+function msStateLabel(m){
+  if(msDone(m)) return {txt:"🟢 已達成 · "+(m.date||""), col:""};
+  if(m.p>0) return {txt:"🟠 進行中 · 目標 "+(m.date||""), col:"color:#b45f04"};
+  const d=parseD(m.date); if(d&&d<TODAY_D) return {txt:"🔴 已逾期 · 應於 "+(m.date||""), col:"color:var(--red)"};
+  return {txt:"⚪ 未開始 · 目標 "+(m.date||""), col:""};
+}
+
+/* ---------------- 總覽 ---------------- */
+let projects=[]; let currentProject=null; const selected=new Set();
+function maintPeriod(p){
+  const ld=parseD(p.launch); if(!ld) return '—';
+  const f=dt=>dt.getFullYear()+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+String(dt.getDate()).padStart(2,'0');
+  const end=new Date(ld.getFullYear()+1,ld.getMonth(),ld.getDate());
+  return f(ld)+' - '+f(end);
+}
+function renderMaster(){
+  const tb=document.getElementById('master-body'); tb.innerHTML="";
+  const active=projects.filter(p=>p.status==="進行中").length;
+  const maintN=projects.filter(p=>p.status==="維護中").length;
+  const warn=projects.filter(p=>p.status==="進行中"&&p.quote&&actMargin(p)<30).length;
+  document.getElementById('k-active').innerText=active;
+  document.getElementById('k-maint').innerText=maintN;
+  document.getElementById('k-warn').innerText=warn;
+  const q=(document.getElementById('q').value||"").toLowerCase();
+  const sf=document.getElementById('f-status').value;
+  const mon=document.getElementById('f-margin').classList.contains('on');
+  const maint = sf==='維護中';
+  // 動態表頭：維護中檢視顯示維運相關欄位
+  document.getElementById('master-head').innerHTML = maint
+    ? `<tr><th style="width:36px;text-align:center"><input type="checkbox" id="sel-all" onclick="toggleSelAll(this)"></th>
+        <th>專案代碼</th><th>專案名稱</th><th>產品類型</th><th>負責人 (PJM)</th><th>狀態</th><th>維護時間</th>
+        <th>總報價</th><th>總實際成本</th><th>毛利率</th><th></th></tr>`
+    : `<tr><th style="width:36px;text-align:center"><input type="checkbox" id="sel-all" onclick="toggleSelAll(this)"></th>
+        <th>專案代碼</th><th>專案名稱</th><th>產品類型</th><th>負責人 (PJM)</th><th>狀態</th><th>上線時間</th>
+        <th>總報價</th><th>總預估成本</th><th>實際成本</th><th>預估毛利率</th><th>實際毛利率</th><th>當前里程碑</th><th></th></tr>`;
+  const cols = maint?11:14;
+  if(projects.length===0){
+    tb.innerHTML=`<tr class="empty"><td colspan="${cols}" style="text-align:center;padding:46px;color:var(--muted);cursor:default">🗂 目前沒有任何專案。<br><span style="font-size:12px">點右上角「+ 新增專案」建立新專案。</span></td></tr>`;
+    syncSelUI(); return;
+  }
+  projects.filter(p=>{
+    if(sf&&p.status!==sf) return false;
+    if(mon&&!(actMargin(p)<30&&p.status==="進行中")) return false;
+    if(q&&!((p.code+p.name+(p.pjm||"")).toLowerCase().includes(q))) return false;
+    return true;
+  }).forEach(p=>{
+    const em=estMargin(p), am=actMargin(p);
+    const stPill=p.status==="進行中"?"blue":p.status==="已完工"?"green":p.status==="維護中"?"amber":"gray";
+    const base=`<td style="text-align:center"><input type="checkbox" class="rowchk" ${selected.has(p.code)?'checked':''} onclick="toggleSel('${p.code}',this)"></td>
+      <td onclick="openProject('${p.code}')"><span class="code">${p.code}</span></td>
+      <td class="name" onclick="openProject('${p.code}')"><b>${p.name}</b></td>
+      <td><span class="ptype ${p.type}">${p.type}</span></td>
+      <td><span class="who"><span class="miniava">${(p.pjm||'?')[0]}</span>${p.pjm||'—'}</span></td>
+      <td><span class="pill ${stPill}">${p.status}</span></td>`;
+    const del=`<td><span class="rowdel" title="刪除" onclick="deleteProject('${p.code}',event)">🗑</span></td>`;
+    if(maint){
+      tb.innerHTML+=`<tr class="${selected.has(p.code)?'sel':''}">${base}
+        <td>${maintPeriod(p)}</td>
+        <td>${fmt(+p.quote||0)}</td>
+        <td>${fmt(actCost(p))}</td>
+        <td><span class="margin ${marginCls(am)}">${am.toFixed(1)}%</span></td>
+        ${del}</tr>`;
+    } else {
+      tb.innerHTML+=`<tr class="${selected.has(p.code)?'sel':''}">${base}
+        <td>${p.launch||'—'}</td>
+        <td>${fmt(+p.quote||0)}</td>
+        <td>${fmt(estCost(p))}</td>
+        <td>${fmt(actCost(p))}</td>
+        <td><span class="margin ${marginCls(em)}">${em.toFixed(1)}%</span></td>
+        <td><span class="margin ${marginCls(am)}">${am.toFixed(1)}%${am<30&&p.status==='進行中'?' ⚠️':''}</span></td>
+        <td><span class="ms-stage">${currentMilestone(p)}</span></td>
+        ${del}</tr>`;
+    }
+  });
+  syncSelUI();
+}
+/* 選取 */
+function toggleSel(code,el){ el.checked?selected.add(code):selected.delete(code); el.closest('tr').classList.toggle('sel',el.checked); syncSelUI(); }
+function toggleSelAll(el){ selected.clear(); if(el.checked) projects.forEach(p=>selected.add(p.code)); renderMaster(); }
+function syncSelUI(){ const n=selected.size,b=document.getElementById('del-sel'); b.innerText=`🗑 刪除選取 (${n})`; b.disabled=n===0;
+  const all=document.getElementById('sel-all'); if(all){ all.checked=projects.length>0&&n===projects.length; all.indeterminate=n>0&&n<projects.length; } }
+function deleteSelected(){ if(!selected.size)return; if(!confirm(`確定刪除選取的 ${selected.size} 個專案？`))return; projects=projects.filter(p=>!selected.has(p.code)); selected.clear(); renderMaster(); }
+function deleteProject(code,e){ e.stopPropagation(); const p=projects.find(x=>x.code===code); if(!confirm(`確定刪除「${p.name}」(${code})？`))return; projects=projects.filter(x=>x.code!==code); selected.delete(code); renderMaster(); }
+function restoreDemo(){ projects=DEMO(); selected.clear(); renderMaster(); }
+
+/* ---------------- 新增專案（直接進基本資料頁，欄位全部空白） ---------------- */
+function addProjectDirect(){
+  const p=mk({code:"", name:"", pjm:"", type:"", ms:"", launch:"", start:"", status:"未開始", quote:0});
+  projects.unshift(p);
+  openProjectObj(p);
+  const c=document.getElementById('e-code'); if(c) c.focus();
+  showToast("已建立新專案，請填寫基本資料");
+}
+function setCode(v){
+  v=(v||"").trim();
+  if(!v){ document.getElementById('e-code').value=currentProject.code; return; }
+  if(projects.some(p=>p!==currentProject && p.code===v)){ alert("專案代碼已存在，請使用不同代碼。"); document.getElementById('e-code').value=currentProject.code; return; }
+  currentProject.code=v;
+  document.getElementById('proj-title').innerText=projTitle(currentProject);
+  setCrumb('專案管理 / 專案總覽 / <b>'+(currentProject.name||'新專案')+'</b>');
+  renderMaster();
+}
+function openAdd(){ ['a-code','a-name','a-pjm'].forEach(i=>document.getElementById(i).value=""); document.getElementById('a-type').value="DS"; document.getElementById('a-err').innerText=""; document.getElementById('add-mask').classList.add('open'); }
+function closeAdd(){ document.getElementById('add-mask').classList.remove('open'); }
+function saveAdd(){
+  const code=document.getElementById('a-code').value.trim(), name=document.getElementById('a-name').value.trim(),
+        type=document.getElementById('a-type').value, pjm=document.getElementById('a-pjm').value.trim();
+  const err=document.getElementById('a-err');
+  if(!code||!name||!pjm){ err.innerText="請填寫必填欄位。"; return; }
+  if(projects.some(p=>p.code===code)){ err.innerText="專案代碼已存在。"; return; }
+  projects.unshift(mk({code,name,type,pjm,status:"未開始",ms:"需求規劃"}));
+  closeAdd(); renderMaster(); openProject(code);
+}
+document.getElementById('add-mask').addEventListener('click',e=>{ if(e.target.id==='add-mask') closeAdd(); });
+
+/* ---------------- 專案工作區 ---------------- */
+function openProject(code){ const p=projects.find(x=>x.code===code); if(p) openProjectObj(p); }
+function openProjectObj(p){
+  currentProject=p;
+  document.getElementById('nav-master').classList.remove('active');
+  showView('project'); tab('overview'); renderProject();
+  setCrumb('專案管理 / 專案總覽 / <b>'+(p.name||'新專案')+'</b>');
+}
+function updateSub(){ const p=currentProject; const q=+p.quote||0; const em=estMargin(p);
+  document.getElementById('proj-sub').innerHTML=`專案經理：${p.pjm?`<b style="color:var(--txt)">${p.pjm}</b>`:'<span style="color:var(--muted)">未指派</span>'}　·　產品：${p.type||'--'}　·　合約總額：${q?fmt(q):'--'}　·　預估毛利率 ${em.toFixed(1)}%`; }
+function msDisplay(p){ return (p.miles&&p.miles.length)? currentMilestone(p) : (p.ms||""); }
+function projTitle(p){ return (p.code?p.code+" · ":"")+(p.name||"未命名專案"); }
+function renderProject(){
+  const p=currentProject;
+  document.getElementById('proj-title').innerText=projTitle(p);
+  updateSub();
+  // 基本資料
+  document.getElementById('e-code').value=p.code;
+  document.getElementById('e-name').value=p.name;
+  document.getElementById('e-type').value=p.type||"";
+  document.getElementById('e-pjm').value=p.pjm||"";
+  document.getElementById('e-ms').value=msDisplay(p);
+  document.getElementById('e-status').value=p.status;
+  document.getElementById('e-start').value=toISO(p.start);
+  document.getElementById('e-launch').value=toISO(p.launch);
+  document.getElementById('e-quote-basic').value=p.quote||"";
+  document.getElementById('e-quote').innerText=fmt(p.quote||0);
+  renderOtherCosts();
+  renderWBS(); renderCosts(); renderDeliv(); renderMembers(); renderTeams(); renderTimeline(); renderAlert(); renderCostTrack(); refreshCalc();
+}
+function setF(f,v){ currentProject[f]=v; if(f==='name'){document.getElementById('proj-title').innerText=projTitle(currentProject);} updateSub(); renderMaster(); }
+function setDate(f,iso){ currentProject[f]=fromISO(iso)||(f==='launch'?'未定':''); renderMaster(); }
+function onQuote(v){ currentProject.quote=parseFloat(v)||0; const e=document.getElementById('e-quote'); if(e)e.innerText=fmt(currentProject.quote||0); updateSub(); refreshCalc(); renderMaster(); }
+/* 其他成本項目（預估） */
+function renderOtherCosts(){
+  const b=document.getElementById('othercost-body'); if(!b) return; if(!currentProject.otherCosts)currentProject.otherCosts=[]; b.innerHTML="";
+  currentProject.otherCosts.forEach((c,i)=>{
+    b.innerHTML+=`<div class="inv-row edit">
+      <input class="cinp inv-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="輸入項目名稱（如：雲端主機、外包費）…" onchange="setOtherCost(${i},'name',this.value)">
+      <input class="cinp num inv-amt" type="number" value="${c.amount||0}" onchange="setOtherCost(${i},'amount',this.value)">
+      <span class="rowdel" onclick="delOtherCost(${i})">🗑</span></div>`;
+  });
+}
+function setOtherCost(i,f,v){ currentProject.otherCosts[i][f]=(f==='amount')?(parseFloat(v)||0):v; refreshCalc(); renderMaster(); }
+function delOtherCost(i){ currentProject.otherCosts.splice(i,1); renderOtherCosts(); refreshCalc(); renderMaster(); }
+function addOtherCost(){ if(!currentProject.otherCosts)currentProject.otherCosts=[]; currentProject.otherCosts.push({name:'',amount:0}); renderOtherCosts(); refreshCalc(); }
+function setNum(f,v){ currentProject[f]=parseFloat(v)||0; if(f==='quote'){const b=document.getElementById('e-quote-basic'); if(b)b.value=currentProject.quote||"";} refreshCalc(); renderMaster(); updateSub(); }
+function refreshCalc(){
+  const p=currentProject;
+  const est=estCost(p), act=actCost(p), em=estMargin(p), am=actMargin(p), pr=progOf(p);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerText=v;};
+  set('o-act',fmt(act));
+  const oam=document.getElementById('o-am'), owrap=document.getElementById('o-am-wrap'), otag=document.getElementById('o-am-tag');
+  if(oam){ const below=am<(+p.target||45);
+    oam.innerText=am.toFixed(1)+"%"; oam.style.color=below?'#E53E3E':'#0f172a';
+    if(otag) otag.innerHTML=below?`<span class="warn-pill">⚠️ 低於目標值</span>`:'';
+    if(owrap) owrap.className='kpibig'+(below?' warn':''); }
+  // 總進度 = 當前里程碑（依今日日期，已完成里程碑的下一階段）
+  const oprog=document.getElementById('o-prog');
+  if(oprog){ oprog.innerText=currentMilestone(p);
+    const msArr=p.miles||[]; let dn=0; if(p.tl){ const st2=tlStatuses(p.tl); const by={}; (p.tl.tasks||[]).forEach(t=>by[t.id]=t);
+      msArr.forEach(m=>{ if(m.assoc&&by[m.assoc]&&st2[m.assoc]==='done') dn++; }); }
+    const pct=msArr.length? Math.round(dn/msArr.length*100):0;
+    const pb=document.getElementById('o-progbar'); if(pb) pb.style.width=pct+"%";
+    const pp=document.getElementById('o-progpct'); if(pp) pp.innerText=pct+"%"; }
+  const inti=document.getElementById('f-intest-inp'); if(inti) inti.innerText=fmt(intEstH(p)*RATE);
+  set('f-totest',fmt(est));
+  const fem=document.getElementById('f-em'); if(fem){ const below=em<(+p.target||45); fem.innerText=em.toFixed(1)+"%"; fem.className="fv margin "+(below?"bad":"good");
+    const fc=document.getElementById('fin-card'); if(fc) fc.className='inv-margin'+(below?' warn':''); }
+  set('c-int',fmt(intActH(p)*RATE)); set('c-ext',fmt(extActual(p))); set('c-tot',fmt(act));
+  const sumR=r=>(p.wbs||[]).reduce((a,f)=>a+(+f[r]||0),0);
+  set('t-fe',sumR('fe')); set('t-be',sumR('be')); set('t-qa',sumR('qa')); set('t-pjm',sumR('pjm'));
+  set('wbs-est',intEstH(p)+" 人日"); set('wbs-cost',fmt(intEstH(p)*RATE));
+  const cst=document.getElementById('e-cost'); if(cst)cst.value=fmt(act);
+  const ems=document.getElementById('e-ms'); if(ems)ems.value=msDisplay(p);
+}
+/* WBS 編輯（功能列表：各職能預估工時 → 總工時 → 成本） */
+function renderWBS(){
+  const p=currentProject, c=document.getElementById('wbs-body'); c.innerHTML="";
+  if(!p.wbs.length){ c.innerHTML=`<div class="wbs-emptybox"><div class="ei">📝</div><div class="et">尚未定義專案範疇</div><div class="es">開始新增功能項目以估算專案人力與成本。</div></div>`; }
+  p.wbs.forEach((f,i)=>{
+    const tot=fnTotal(f), cost=tot*RATE;
+    if(f.locked){
+      const [sc,sl]=stTag[f.st];
+      const pop=f.desc?`<div class="desc-pop">${f.desc}</div>`:'';
+      c.innerHTML+=`<div class="func-row locked">
+        <div class="fname-view">${f.name||'(未命名)'}${pop}</div>
+        <div class="fh-num">${f.fe}</div><div class="fh-num">${f.be}</div><div class="fh-num">${f.qa}</div><div class="fh-num">${f.pjm}</div>
+        <div class="fh-num">${tot} 人日</div>
+        <div class="func-cost">${fmt(cost)}</div>
+        <div><span class="tag ${sc}">${sl}</span></div>
+        <div class="rowact"><span class="ed" title="編輯此功能" onclick="unlockFn(${i})">✏️ 編輯</span><span class="rowdel" title="刪除" onclick="delFn(${i})">🗑</span></div></div>`;
+    } else {
+      c.innerHTML+=`<div class="func-row">
+        <div class="fname"><input class="cinp" value="${(f.name||'').replace(/"/g,'&quot;')}" placeholder="例如：會員登入系統、購物車 API…" onchange="setFn(${i},'name',this.value)">
+          <input class="cinp" style="font-size:12px;color:var(--muted)" value="${(f.desc||'').replace(/"/g,'&quot;')}" placeholder="內容說明（鎖定後滑鼠移過顯示）" onchange="setFn(${i},'desc',this.value)"></div>
+        <div><input class="cinp num" type="number" value="${f.fe}" onchange="setFn(${i},'fe',this.value)"></div>
+        <div><input class="cinp num" type="number" value="${f.be}" onchange="setFn(${i},'be',this.value)"></div>
+        <div><input class="cinp num" type="number" value="${f.qa}" onchange="setFn(${i},'qa',this.value)"></div>
+        <div><input class="cinp num" type="number" value="${f.pjm}" onchange="setFn(${i},'pjm',this.value)"></div>
+        <div class="fh-num">${tot} 人日</div>
+        <div class="func-cost">${fmt(cost)}</div>
+        <div><select class="cinp" onchange="setFn(${i},'st',this.value)">${Object.keys(stTag).map(k=>`<option value="${k}" ${f.st===k?'selected':''}>${stTag[k][1]}</option>`).join('')}</select></div>
+        <div class="rowact"><span class="ok" title="完成填寫並鎖定" onclick="lockFn(${i})">✓ 完成</span><span class="rowdel" title="刪除" onclick="delFn(${i})">🗑</span></div></div>`;
+    }
+  });
+}
+function setFn(i,f,v){ const it=currentProject.wbs[i]; it[f]=(['fe','be','qa','pjm'].includes(f))?(parseFloat(v)||0):v;
+  if(['fe','be','qa','pjm','st'].includes(f)) renderWBS(); refreshCalc(); renderMaster(); }
+function lockFn(i){ const it=currentProject.wbs[i]; if(!(it.name||'').trim()){ alert('請先填寫功能名稱再完成。'); return; } it.locked=true; renderWBS(); refreshCalc(); renderMaster(); showToast('功能已儲存並鎖定'); }
+function unlockFn(i){ currentProject.wbs[i].locked=false; renderWBS(); }
+function delFn(i){ currentProject.wbs.splice(i,1); renderWBS(); refreshCalc(); renderMaster(); }
+function addFunc(){ currentProject.wbs.push({name:"",desc:"",fe:0,be:0,qa:0,pjm:0,st:"todo",locked:false}); renderWBS(); refreshCalc(); }
+/* 成本 */
+function renderCosts(){
+  const b=document.getElementById('cost-body'); if(!b) return; b.innerHTML="";
+  b.innerHTML+=`<tr><td>內部人力（自動連動）</td><td><span class="pill blue">人力</span></td><td>${fmt(intActH(currentProject)*RATE)}</td><td>${intActH(currentProject)} 人日 × 日薪 ${RATE.toLocaleString()}</td><td></td></tr>`;
+  currentProject.costs.forEach((c,i)=>{
+    b.innerHTML+=`<tr><td><input class="cinp" value="${c.name}" onchange="setCost(${i},'name',this.value)"></td>
+      <td><input class="cinp" value="${c.type}" onchange="setCost(${i},'type',this.value)"></td>
+      <td><input class="cinp num" type="number" value="${c.amount}" onchange="setCost(${i},'amount',this.value)"></td>
+      <td><input class="cinp" value="${c.note||''}" onchange="setCost(${i},'note',this.value)"></td>
+      <td><span class="rowdel" onclick="delCost(${i})">🗑</span></td></tr>`;
+  });
+}
+function setCost(i,f,v){ currentProject.costs[i][f]=(f==='amount')?(parseFloat(v)||0):v; refreshCalc(); renderMaster(); }
+function delCost(i){ currentProject.costs.splice(i,1); renderCosts(); refreshCalc(); renderMaster(); }
+function addCost(){ currentProject.costs.push({name:"新項目",type:"第三方服務",amount:0,note:""}); renderCosts(); refreshCalc(); }
+/* 交付文件 */
+function renderDeliv(){
+  const b=document.getElementById('deliv-body'); b.innerHTML="";
+  const d=currentProject.deliv;
+  if(!d.length){ b.innerHTML=`<tr><td colspan="7" class="empty-box">尚無交付項目，點下方新增。</td></tr>`; }
+  d.forEach((x,i)=>{
+    const link=x.link?`<a class="link" onclick="alert('開啟文件（Demo）：${x.link}')">📎 ${x.link}</a>`:`<span style="color:var(--muted)">— 未上傳</span>`;
+    b.innerHTML+=`<tr><td><input class="cinp" value="${x.item}" onchange="setDeliv(${i},'item',this.value)"></td>
+      <td><input class="cinp" style="width:90px" value="${x.team}" onchange="setDeliv(${i},'team',this.value)"></td>
+      <td><select class="cinp" onchange="setDeliv(${i},'st',this.value)">${Object.keys(stTag).map(k=>`<option value="${k}" ${x.st===k?'selected':''}>${stTag[k][1]}</option>`).join('')}</select></td>
+      <td><input class="cinp" style="width:110px" value="${x.eta}" onchange="setDeliv(${i},'eta',this.value)"></td>
+      <td><input class="cinp" style="width:110px" value="${x.af}" onchange="setDeliv(${i},'af',this.value)"></td>
+      <td>${link}</td><td><span class="rowdel" onclick="delDeliv(${i})">🗑</span></td></tr>`;
+  });
+  const done=d.filter(x=>x.st==="done").length;
+  document.getElementById('deliv-count').innerText=d.length?`（已完成 ${done} / ${d.length} 項）`:"";
+}
+function setDeliv(i,f,v){ currentProject.deliv[i][f]=v; if(f==='st')renderDeliv(); }
+function delDeliv(i){ currentProject.deliv.splice(i,1); renderDeliv(); }
+function addDeliv(){ currentProject.deliv.push({item:"新交付項目",team:"凱鈿",st:"todo",eta:"",af:"",link:""}); renderDeliv(); }
+/* 成員 */
+function renderMembers(){
+  const b=document.getElementById('member-body'); if(!b) return; b.innerHTML="";
+  const ms=currentProject.members||[];
+  if(!ms.length){ b.innerHTML=`<tr><td colspan="4"><div class="member-empty"><div class="ei">👤</div><div class="et">尚未添加任何成員</div><div class="es">新增團隊成員以開始協作此專案。</div></div></td></tr>`; }
+  ms.forEach((m,i)=>{
+    // 相容舊格式（陣列）
+    if(Array.isArray(m)){ m={role:ROLE_OPTS[0],name:m[1]||'',email:''}; currentProject.members[i]=m; }
+    const opts=ROLE_OPTS.map(r=>`<option value="${r}" ${m.role===r?'selected':''}>${r}</option>`).join('');
+    b.innerHTML+=`<tr>
+      <td><select class="cinp" onchange="setMember(${i},'role',this.value)">${opts}</select></td>
+      <td><input class="cinp" value="${(m.name||'').replace(/"/g,'&quot;')}" placeholder="姓名" onchange="setMember(${i},'name',this.value)"></td>
+      <td><input class="cinp" type="email" value="${(m.email||'').replace(/"/g,'&quot;')}" placeholder="name@example.com" onchange="setMember(${i},'email',this.value)"></td>
+      <td style="text-align:center"><span class="rowdel" onclick="delMember(${i})">🗑</span></td></tr>`;
+  });
+}
+function setMember(i,f,v){ currentProject.members[i][f]=v; }
+function delMember(i){ currentProject.members.splice(i,1); renderMembers(); }
+function addMember(){ currentProject.members.push({role:ROLE_OPTS[0],name:'',email:''}); renderMembers(); }
+/* 團隊（連動甘特圖） */
+function renderTeams(){
+  const b=document.getElementById('team-body'); if(!b) return; b.innerHTML="";
+  if(!currentProject.teams) currentProject.teams=defaultTeams();
+  currentProject.teams.forEach((t,i)=>{
+    b.innerHTML+=`<tr><td><span class="tdot" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${t.color};margin-right:8px"></span><input class="cinp" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="setTeamF(${i},'name',this.value)"></td>
+      <td><input type="color" value="${t.color}" onchange="setTeamF(${i},'color',this.value)" style="width:46px;height:26px;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer"></td>
+      <td><span class="rowdel" onclick="delTeam(${i})">🗑</span></td></tr>`;
+  });
+}
+function setTeamF(i,f,v){ const old=currentProject.teams[i].name; currentProject.teams[i][f]=v;
+  if(f==='name'&&currentProject.tl){ (currentProject.tl.tasks||[]).forEach(t=>{ if(t.team===old)t.team=v; }); }
+  renderTeams(); renderTimeline(); }
+function delTeam(i){ currentProject.teams.splice(i,1); renderTeams(); renderTimeline(); }
+function addTeam(){ const c=TEAM_PALETTE[currentProject.teams.length%TEAM_PALETTE.length]; currentProject.teams.push({name:'新團隊',color:c}); renderTeams(); renderTimeline(); }
+/* ===================== 時程與里程碑 (Timeline) ===================== */
+const G_START=new Date(2026,2,1), G_N=185, DW=14;
+const G_TODAY=Math.round((new Date(2026,6,3)-G_START)/86400000); // 今日 2026/07/03
+/* 台灣 2026 國定假日與補假（示範） */
+const HOLIDAY_ISO=['2026-01-01','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-03-02','2026-04-06','2026-05-01','2026-06-19','2026-09-25','2026-10-12'];
+let _holiSet=null;
+function holiSet(){ if(!_holiSet) _holiSet=new Set(HOLIDAY_ISO.map(toIdx)); return _holiSet; }
+function isBiz(i){ const d=gDate(i).getDay(); return d!==0&&d!==6&&!holiSet().has(i); }
+function endFromWorkdays(s,md){ md=Math.max(1,md||1); let c=0,i=s,g=0; while(g++<4000){ if(isBiz(i))c++; if(c>=md) return i; i++; } return i; }
+function gDateFull(i){ const d=gDate(i); return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,'0')+"/"+String(d.getDate()).padStart(2,'0'); }
+const TEAM_PALETTE=['#f5b301','#10b981','#ef4444','#2e6fff','#7a5af8','#0ea5e9'];
+function defaultTeams(){ return [{name:'富士',color:'#f5b301'},{name:'凱鈕',color:'#10b981'},{name:'五福',color:'#ef4444'}]; }
+function teamColor(p,name){ const t=(p.teams||[]).find(x=>x.name===name); return t?t.color:'#94a3b8'; }
+let tlFilterVal='all';
+let G_VS=0, G_VN=30; // 甘特視窗起點(索引)與天數，依專案最早任務動態計算
+function gDate(i){ const d=new Date(G_START); d.setDate(d.getDate()+i); return d; }
+function gDateStr(i){ const d=gDate(i); return (d.getMonth()+1)+"/"+d.getDate(); }
+function toIdx(iso){ if(!iso) return null; const d=new Date(iso); return Math.round((d-G_START)/86400000); }
+function idxToISO(i){ const d=gDate(i); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'); }
+function netDays(s,e){ if(s==null||e==null) return 0; let n=0; for(let i=s;i<=e;i++){ if(isBiz(i)) n++; } return n; }
+function tlEnsureMd(tl){ (tl.tasks||[]).filter(t=>!t.group).forEach(t=>{ if(t.md==null) t.md=Math.max(1,netDays(t.s,t.e)); t.e=endFromWorkdays(t.s,t.md); }); }
+function childrenOf(tl,gid){ return (tl.tasks||[]).filter(t=>t.parent===gid); }
+/* 父任務時間彙總 (Roll-up) */
+function tlRollup(tl){ (tl.tasks||[]).filter(t=>t.group).forEach(g=>{ const ch=childrenOf(tl,g.id); if(ch.length){ g.s=Math.min(...ch.map(c=>c.s)); g.e=Math.max(...ch.map(c=>c.e)); } else { g.s=0; g.e=0; } }); }
+/* 下游自動向後對齊 (FS Normalize) */
+function tlNormalize(tl){ const by={}; (tl.tasks||[]).forEach(t=>by[t.id]=t); let ch=true,g=0;
+  while(ch&&g++<300){ ch=false; (tl.deps||[]).forEach(d=>{ const P=by[d.p],S=by[d.s]; if(!P||!S||P.group||S.group) return;
+    if(S.s < P.e+1){ const dl=(P.e+1)-S.s; S.s+=dl; S.e+=dl; ch=true; } }); } }
+/* 狀態運算 + 骨牌式延遲 (Ripple) */
+function tlStatuses(tl){
+  const st={}, by={}; (tl.tasks||[]).forEach(t=>by[t.id]=t);
+  (tl.tasks||[]).filter(t=>!t.group).forEach(t=>{ st[t.id]= t.af!=null?'done':(G_TODAY>t.e?'over':'ontrack'); });
+  let ch=true,g=0;
+  while(ch&&g++<80){ ch=false; (tl.deps||[]).forEach(d=>{ const P=by[d.p],S=by[d.s]; if(!P||!S||S.group) return;
+    if(st[S.id]==='done'||st[S.id]==='over') return;
+    if((st[P.id]==='over'||st[P.id]==='amber') && st[S.id]!=='amber'){ st[S.id]='amber'; ch=true; } }); }
+  // 父任務狀態＝子任務最差
+  (tl.tasks||[]).filter(t=>t.group).forEach(gp=>{ const cs=childrenOf(tl,gp.id).map(c=>st[c.id]);
+    st[gp.id]= cs.includes('over')?'over': cs.includes('amber')?'amber': (cs.length&&cs.every(x=>x==='done'))?'done':'ontrack'; });
+  return st;
+}
+function byTask(id){ return (currentProject.tl.tasks||[]).find(t=>t.id===id); }
+function renderTimeline(){ tlRollup(currentProject.tl); renderTeamFilter(); renderMsTimeline(); renderGantt2(); }
+/* 團隊篩選（連動團隊角色） */
+function renderTeamFilter(){
+  const p=currentProject, el=document.getElementById('tl-filter'); if(!el) return;
+  let h=`<button class="seg ${tlFilterVal==='all'?'on':''}" onclick="tlFilter('all')">全部</button>`;
+  (p.teams||[]).forEach(t=>{ h+=`<button class="seg ${tlFilterVal===t.name?'on':''}" onclick="tlFilter('${t.name}')">${t.name}</button>`; });
+  el.innerHTML=h;
+}
+/* 里程碑時間軸（由甘特階段建立、依時間排序、狀態警示） */
+function renderMsTimeline(){
+  const p=currentProject, c=document.getElementById('ms-timeline'); c.innerHTML=""; tlRollup(p.tl);
+  const st=tlStatuses(p.tl);
+  const ms=(p.miles||[]).map((m,i)=>({m,i,bt:m.assoc?byTask(m.assoc):null}))
+    .sort((a,b)=>((a.bt?a.bt.e:9999)-(b.bt?b.bt.e:9999)));
+  if(!ms.length){ c.innerHTML=`<div class="ms-empty"><div class="ill">🏁</div><div class="t">尚未設定任何里程碑。請於下方甘特圖各階段點「🎯里程碑」加入關鍵交付節點，系統會依時間自動排序。</div></div>`; return; }
+  const cur=currentMilestone(p);
+  const META={done:['已達成','done'],over:['嚴重逾期','over'],amber:['風險預警','risk'],ontrack:['進行中','doing']};
+  const stageAf=bt=>{ if(!bt) return null; if(!bt.group) return bt.af; const ch=childrenOf(p.tl,bt.id); if(ch.length&&ch.every(x=>x.af!=null)) return Math.max(...ch.map(x=>x.af)); return null; };
+  let rows="";
+  ms.forEach((o,k)=>{
+    const m=o.m, bt=o.bt, stt=bt?(st[bt.id]||'ontrack'):'ontrack';
+    const done=stt==='done'; const [lbl,cls]=META[stt];
+    const eta=bt?gDateFull(bt.e):'—'; const wd=bt?netDays(bt.s,bt.e)+'d':'—';
+    const afi=stageAf(bt); const af=afi!=null?gDateFull(afi):'—';
+    const isCur=(m.t===cur)&&!done;
+    rows+=`<tr${isCur?' style="background:rgba(0,220,135,.06)"':''}>
+      <td style="text-align:center;color:var(--muted)">${done?'✓':k+1}</td>
+      <td><b>${m.t}</b>${isCur?' <span class="pill green" style="font-size:10px">當前</span>':''}</td>
+      <td style="text-align:center">${eta}</td>
+      <td style="text-align:center">${wd}</td>
+      <td style="text-align:center;color:${afi!=null?'var(--green)':'var(--muted)'}">${af}</td>
+      <td style="text-align:center"><span class="tag ${cls}">${lbl}</span></td>
+      <td style="text-align:center"><span class="rowdel" onclick="tlDelMsById('${m.assoc}')">🗑</span></td>
+    </tr>`;
+  });
+  c.innerHTML=`<div class="tablewrap"><table>
+    <thead><tr><th style="width:48px;text-align:center">#</th><th style="width:26%">里程碑</th><th style="width:17%;text-align:center">預計完成 (ETA)</th><th style="width:12%;text-align:center">工作日</th><th style="width:17%;text-align:center">實際完成 (AF)</th><th style="width:14%;text-align:center">狀態</th><th style="width:48px"></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function tlAddStageMs(gid){ const g=byTask(gid); if(!g)return;
+  if((currentProject.miles||[]).some(m=>m.assoc===gid)){ currentProject.miles=currentProject.miles.filter(m=>m.assoc!==gid); }
+  else { currentProject.miles.push({t:g.name, assoc:gid}); }
+  renderMsTimeline(); renderGantt2(); renderMaster(); tlAutoSave(); }
+function tlDelMsById(assoc){ currentProject.miles=currentProject.miles.filter(m=>m.assoc!==assoc); renderMsTimeline(); renderGantt2(); renderMaster(); }
+/* 甘特圖 v2（父子階層 + 團隊色條 + 可編輯日期） */
+function renderGantt2(){
+  const p=currentProject, tl=p.tl; tlEnsureMd(tl); tlRollup(tl); const st=tlStatuses(tl), host=document.getElementById('g2');
+  // 排序：每個父任務後接其子任務
+  const ordered=[]; (tl.tasks||[]).filter(t=>t.group).forEach(g=>{ ordered.push(g); childrenOf(tl,g.id).forEach(c=>ordered.push(c)); });
+  (tl.tasks||[]).filter(t=>!t.group&&!t.parent).forEach(t=>ordered.push(t));
+  // 團隊篩選
+  const showSet=new Set(), dimSet=new Set();
+  if(tlFilterVal==='all'){ ordered.forEach(t=>showSet.add(t.id)); }
+  else {
+    ordered.forEach(t=>{ if(!t.group && t.team===tlFilterVal){ showSet.add(t.id); if(t.parent)showSet.add(t.parent); } });
+    (tl.deps||[]).forEach(d=>{ if(showSet.has(d.p)&&!showSet.has(d.s))dimSet.add(d.s); if(showSet.has(d.s)&&!showSet.has(d.p))dimSet.add(d.p); });
+    dimSet.forEach(id=>{ if(showSet.has(id))dimSet.delete(id); const t=byTask(id); if(t&&t.parent){ if(!showSet.has(t.parent))dimSet.add(t.parent);} });
+  }
+  const rows=ordered.filter(t=>showSet.has(t.id)||dimSet.has(t.id));
+  // 動態視窗：從最早任務起始日 → 最晚結束日（含今日）
+  const subs=(tl.tasks||[]).filter(t=>!t.group);
+  let mn=subs.length?Math.min(...subs.map(t=>t.s)):G_TODAY, mx=subs.length?Math.max(...subs.map(t=>t.e)):G_TODAY+20;
+  G_VS=Math.max(0,mn-1); G_VN=Math.max(30,(Math.max(mx,G_TODAY)+3)-G_VS);
+  let days=""; for(let k=0;k<G_VN;k++){ const i=G_VS+k, d=gDate(i),wk=(d.getDay()===0||d.getDay()===6); days+=`<div class="g2-day${i===G_TODAY?' today':wk?' wk':''}">${d.getMonth()+1}/${d.getDate()}</div>`; }
+  let left=`<div class="g2lh"><span>任務</span><span>團隊</span><span>START</span><span>工作日</span><span>END (自動)</span><span>實際完成</span><span>狀態</span><span></span></div>`;
+  let right=`<div class="g2-hdr">${days}</div>`;
+  const idxOf={}; rows.forEach((t,r)=>idxOf[t.id]=r);
+  const teamOpts=t=>(p.teams||[]).map(tm=>`<option value="${tm.name}" ${t.team===tm.name?'selected':''}>${tm.name}</option>`).join('');
+  rows.forEach(t=>{
+    const dim=dimSet.has(t.id), cls=st[t.id]||'ontrack';
+    if(t.group){
+      const isMs=(p.miles||[]).some(m=>m.assoc===t.id);
+      const GMETA={done:['已達成','done'],over:['嚴重逾期','over'],amber:['風險預警','risk'],ontrack:['進行中','doing']};
+      const [glbl,gcls]=GMETA[cls]||GMETA.ontrack;
+      left+=`<div class="g2-rowname group"><span class="nm">▸<input class="cin" style="background:transparent;border:none;font-weight:800" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="tlSetName('${t.id}',this.value)"></span><span></span><span class="dcol endv">${gDateFull(t.s)}</span><span class="dcol">${netDays(t.s,t.e)}d</span><span class="dcol endv">${gDateFull(t.e)}</span><span></span><span style="text-align:center"><span class="tag ${gcls}">${glbl}</span></span><span class="gbtns"><span class="addc" onclick="tlAddChild('${t.id}')">＋子任務</span><span class="addc" onclick="tlAddStageMs('${t.id}')">🎯里程碑${isMs?'✓':''}</span><span class="op" onclick="tlDelTask('${t.id}')">🗑</span></span></div>`;
+      right+=`<div class="g2-track"><div class="todayline" style="left:${(G_TODAY-G_VS)*DW}px"></div>
+        <div class="g2bar grp" style="left:${(t.s-G_VS)*DW}px;width:${(t.e-t.s+1)*DW}px"></div></div>`;
+    } else {
+      const tc=teamColor(p,t.team);
+      const sVal = t.af!=null?'done':(t.status||'doing');
+      const sOpts=[['todo','尚未開始'],['doing','進行中'],['done','已完成']].map(o=>`<option value="${o[0]}" ${sVal===o[0]?'selected':''}>${o[1]}</option>`).join('');
+      left+=`<div class="g2-rowname"><span class="nm"><input class="cin" title="${(t.name||'').replace(/"/g,'&quot;')}" value="${(t.name||'').replace(/"/g,'&quot;')}" onchange="tlSetName('${t.id}',this.value)"></span>
+        <span class="tcell"><span class="tsw" style="background:${tc}"></span><select class="tsel" onchange="tlSetTeam('${t.id}',this.value)">${teamOpts(t)}</select></span>
+        <input class="gd" type="date" value="${idxToISO(t.s)}" onchange="tlSetDate('${t.id}','s',this.value)">
+        <input class="gd" type="number" min="1" value="${t.md||netDays(t.s,t.e)}" onchange="tlSetMd('${t.id}',this.value)" title="工作日（自動扣除週末與國定假日）">
+        <span class="dcol endv" title="由 START＋工作日 自動推算">${gDateFull(t.e)}</span>
+        <input class="gd" type="date" value="${t.af!=null?idxToISO(t.af):''}" onchange="tlSetAf('${t.id}',this.value)" title="實際完成日（填入即標記完成）">
+        <select class="ssel st-${sVal}" onchange="tlSetStatus('${t.id}',this.value)">${sOpts}</select>
+        <span class="op" onclick="tlDelTask('${t.id}')">🗑</span></div>`;
+      right+=`<div class="g2-track" data-tid="${t.id}"><div class="todayline" style="left:${(G_TODAY-G_VS)*DW}px"></div>
+        <div class="g2bar ${cls}${dim?' dim':''}" data-tid="${t.id}" style="left:${(t.s-G_VS)*DW}px;width:${(t.e-t.s+1)*DW}px;border-left:4px solid ${tc}">
+          <span class="hres hl"></span><span class="anchor al" data-tid="${t.id}" data-side="l"></span>
+          <span style="pointer-events:none;overflow:hidden">${t.name}</span>
+          <span class="anchor ar" data-tid="${t.id}" data-side="r"></span><span class="hres hr"></span>
+        </div></div>`;
+    }
+  });
+  const H=rows.length*46;
+  host.innerHTML=`<div class="g2-left">${left}</div><div class="g2-right"><div style="position:relative;min-width:${G_VN*DW}px">${right}<svg id="g2-svg" width="${G_VN*DW}" height="${H+34}"></svg></div></div>`;
+  drawDeps(rows,idxOf); bindGanttInteractions();
+  const lt=document.getElementById('legend-teams'); if(lt){ lt.innerHTML=(p.teams||[]).map(t=>`<span style="margin-right:14px"><span class="sw" style="background:${t.color}"></span>${t.name}</span>`).join(''); }
+}
+function drawDeps(rows,idxOf){
+  const svg=document.getElementById('g2-svg'); if(!svg) return; const by={}; (currentProject.tl.tasks||[]).forEach(t=>by[t.id]=t);
+  let lines=`<defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"/></marker></defs>`;
+  (currentProject.tl.deps||[]).forEach(d=>{ if(idxOf[d.p]===undefined||idxOf[d.s]===undefined) return; const P=by[d.p],S=by[d.s];
+    const x1=(P.e+1-G_VS)*DW,y1=34+idxOf[d.p]*46+23,x2=(S.s-G_VS)*DW,y2=34+idxOf[d.s]*46+23;
+    lines+=`<path d="M${x1},${y1} C${x1+16},${y1} ${x2-16},${y2} ${x2},${y2}" stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#arw)" opacity="0.7"/>`; });
+  svg.innerHTML=lines;
+}
+/* 編輯：日期 / 完成 */
+function tlSetDate(id,f,iso){ const t=byTask(id); const v=toIdx(iso); if(v==null) return;
+  t.s=v; if(t.md==null)t.md=1; t.e=endFromWorkdays(t.s,t.md);
+  tlNormalize(currentProject.tl); renderGantt2(); renderMsTimeline(); tlAutoSave(); }
+function tlSetMd(id,v){ const t=byTask(id); t.md=Math.max(1,parseInt(v)||1); t.e=endFromWorkdays(t.s,t.md);
+  tlNormalize(currentProject.tl); renderGantt2(); renderMsTimeline(); tlAutoSave(); }
+function tlToggleAf(id){ const t=byTask(id); t.af = t.af!=null? null : t.e; renderGantt2(); renderMsTimeline(); tlAutoSave(); }
+function tlSetAf(id,iso){ const t=byTask(id); if(!iso){ t.af=null; if(t.status==='done')t.status='doing'; } else { t.af=toIdx(iso); t.status='done'; } renderGantt2(); renderMsTimeline(); renderMaster(); tlAutoSave(); }
+function tlSetStatus(id,v){ const t=byTask(id); if(v==='done'){ t.af=t.e; t.status='done'; } else { t.af=null; t.status=v; } renderGantt2(); renderMsTimeline(); renderMaster(); tlAutoSave(); }
+/* 編輯：新增/刪除 階段與任務、名稱、團隊 */
+function tlNewId(){ return 'X'+Math.random().toString(36).slice(2,7); }
+function tlAddStage(){ const gid=tlNewId(); const p=currentProject; const tm=(p.teams&&p.teams[0])?p.teams[0].name:'';
+  p.tl.tasks.push({id:gid,group:true,name:'新階段'});
+  p.tl.tasks.push({id:tlNewId(),parent:gid,name:'新子任務',team:tm,s:Math.max(0,G_TODAY),e:Math.max(0,G_TODAY)+4,af:null});
+  renderGantt2(); tlAutoSave(); }
+function tlAddChild(gid){ const id=tlNewId(); currentProject.tl.tasks.push({id,parent:gid,name:'新任務',team:'kaidan',s:Math.max(0,G_TODAY),e:Math.max(0,G_TODAY)+4,af:null});
+  // 插到該階段子任務群後（重排：把新任務移到 parent 之後最後一個子任務後）
+  renderGantt2(); tlAutoSave(); }
+function tlDelTask(id){ const t=byTask(id); if(!t) return;
+  if(t.group){ if(!confirm('刪除此階段將一併刪除其所有子任務，確定？')) return; const kids=childrenOf(currentProject.tl,id).map(c=>c.id);
+    currentProject.tl.tasks=currentProject.tl.tasks.filter(x=>x.id!==id&&!kids.includes(x.id));
+    currentProject.tl.deps=currentProject.tl.deps.filter(d=>!kids.includes(d.p)&&!kids.includes(d.s)); }
+  else { currentProject.tl.tasks=currentProject.tl.tasks.filter(x=>x.id!==id);
+    currentProject.tl.deps=currentProject.tl.deps.filter(d=>d.p!==id&&d.s!==id);
+    (currentProject.miles||[]).forEach(m=>{ if(m.assoc===id)m.assoc=null; }); }
+  renderGantt2(); renderMsTimeline(); renderMaster(); tlAutoSave(); }
+function tlSetName(id,v){ const t=byTask(id); t.name=v; renderMsTimeline(); tlAutoSave(); }
+function tlSetTeam(id,v){ const t=byTask(id); t.team=v; renderGantt2(); tlAutoSave(); }
+/* 拖曳 / 縮放 / 連線 */
+let tlSaveTimer=null;
+function tlAutoSave(){ const t=document.getElementById('toast'); t.innerText="● 變更已實時套用"; t.classList.add('show');
+  clearTimeout(tlSaveTimer); tlSaveTimer=setTimeout(()=>{ t.innerText="✓ 已即時套用變更"; renderMaster(); setTimeout(()=>t.classList.remove('show'),1400); },800); }
+function bindGanttInteractions(){
+  const right=document.querySelector('#g2 .g2-right'); if(!right) return;
+  right.querySelectorAll('.g2bar').forEach(bar=>{
+    if(bar.classList.contains('grp')) return; const id=bar.dataset.tid, t=byTask(id);
+    const start=(e,mode)=>{ e.preventDefault(); e.stopPropagation(); const x0=e.clientX,s0=t.s,e0=t.e,track=bar.parentElement;
+      const ghost=document.createElement('div'); ghost.className='g2ghost'; ghost.style.left=((s0-G_VS)*DW)+'px'; ghost.style.width=((e0-s0+1)*DW)+'px'; ghost.innerHTML=`<span class="lbl"></span>`; track.appendChild(ghost); bar.style.cursor='grabbing';
+      const mv=ev=>{ const dd=Math.round((ev.clientX-x0)/DW); let ns=s0,ne=e0; if(mode==='move'){ns=s0+dd;ne=e0+dd;}else if(mode==='l'){ns=Math.min(s0+dd,e0);}else{ne=Math.max(e0+dd,s0);}
+        ns=Math.max(0,ns); ne=Math.max(ns,ne); bar.style.left=((ns-G_VS)*DW)+'px'; bar.style.width=((ne-ns+1)*DW)+'px';
+        ghost.querySelector('.lbl').innerText=`${gDateStr(ns)} → ${gDateStr(ne)}（${netDays(ns,ne)} 工作日）`; bar._ns=ns; bar._ne=ne; };
+      const up=()=>{ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); if(bar._ns!=null){ t.s=bar._ns; t.e=bar._ne; t.md=Math.max(1,netDays(t.s,t.e)); bar._ns=null; } ghost.remove(); tlNormalize(currentProject.tl); renderGantt2(); renderMsTimeline(); tlAutoSave(); };
+      document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); };
+    bar.addEventListener('mousedown',e=>{ if(e.target.classList.contains('hres')||e.target.classList.contains('anchor')) return; start(e,'move'); });
+    bar.querySelector('.hl').addEventListener('mousedown',e=>start(e,'l')); bar.querySelector('.hr').addEventListener('mousedown',e=>start(e,'r'));
+    bar.querySelector('.anchor.ar').addEventListener('mousedown',e=>{ e.preventDefault(); e.stopPropagation();
+      const svg=document.getElementById('g2-svg'),rect=svg.getBoundingClientRect();
+      const tmp=document.createElementNS('http://www.w3.org/2000/svg','path'); tmp.setAttribute('stroke','var(--brand-d)'); tmp.setAttribute('stroke-width','2'); tmp.setAttribute('fill','none'); tmp.setAttribute('stroke-dasharray','4 3'); svg.appendChild(tmp);
+      const sx=(t.e+1-G_VS)*DW, sy=34+[...right.querySelectorAll('.g2-track')].findIndex(tr=>tr.dataset.tid===id)*46+23;
+      const mv=ev=>{ tmp.setAttribute('d',`M${sx},${sy} L${ev.clientX-rect.left},${ev.clientY-rect.top}`); };
+      const up=ev=>{ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); tmp.remove();
+        const el=document.elementFromPoint(ev.clientX,ev.clientY);
+        if(el&&el.classList.contains('anchor')&&el.dataset.side==='l'){ const sid=el.dataset.tid;
+          if(sid!==id&&!(currentProject.tl.deps||[]).some(x=>x.p===id&&x.s===sid)){ currentProject.tl.deps.push({p:id,s:sid}); tlNormalize(currentProject.tl); renderGantt2(); renderMsTimeline(); tlAutoSave(); } } };
+      document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); });
+  });
+}
+function tlFilter(f){ tlFilterVal=f; document.querySelectorAll('#tl-filter .seg').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); renderGantt2(); }
+/* 里程碑抽屜（任務綁定） */
+function tlOpenDrawer(){ const p=currentProject; document.getElementById('ms-title').value=""; document.getElementById('ms-err').innerText=""; document.getElementById('ms-deadline-v').innerText="—";
+  const sel=document.getElementById('ms-assoc'); sel.innerHTML=`<option value="">（不綁定）</option>`+(p.tl.tasks||[]).map(t=>`<option value="${t.id}">${t.group?'【階段】':''}${t.name}</option>`).join('');
+  document.getElementById('ms-drawer').classList.add('open'); }
+function tlMsBindPreview(){ const id=document.getElementById('ms-assoc').value; const t=id?byTask(id):null; tlRollup(currentProject.tl); document.getElementById('ms-deadline-v').innerText=t?gDateStr(t.e):"—"; }
+function tlCloseDrawer(){ document.getElementById('ms-drawer').classList.remove('open'); }
+function tlSaveMs(){ const t=document.getElementById('ms-title').value.trim(), as=document.getElementById('ms-assoc').value;
+  if(!t){ document.getElementById('ms-err').innerText="請填寫里程碑名稱。"; return; }
+  currentProject.miles.push({t, assoc:as||null}); tlCloseDrawer(); renderMsTimeline(); renderMaster(); tlAutoSave(); }
+function tlDelMs(i){ currentProject.miles.splice(i,1); renderMsTimeline(); renderMaster(); }
+document.addEventListener('click',e=>{ if(e.target.id==='ms-drawer') tlCloseDrawer(); });
+/* 儲存並返回總覽（循環依賴檢查） */
+function tlSaveExit(){
+  const tl=currentProject.tl, adj={}; (tl.deps||[]).forEach(d=>{ (adj[d.p]=adj[d.p]||[]).push(d.s); });
+  const col={}; let cyc=false; (tl.tasks||[]).forEach(t=>col[t.id]=0);
+  function dfs(u){ col[u]=1; (adj[u]||[]).forEach(v=>{ if(col[v]===1)cyc=true; else if(col[v]===0)dfs(v); }); col[u]=2; }
+  (tl.tasks||[]).forEach(t=>{ if(col[t.id]===0) dfs(t.id); });
+  if(cyc){ alert("偵測到循環依賴（Deadlock），請先修正後再儲存。"); return; }
+  showToast("時程與里程碑已儲存"); renderMaster(); setTimeout(()=>go('master'),400);
+}
+/* 預警橫幅 */
+function renderAlert(){
+  const p=currentProject, bar=document.getElementById('proj-alert');
+  const over=(p.wbs||[]).filter(f=>f.st==='over').length;
+  const risk=(p.wbs||[]).filter(f=>f.st==='risk').length;
+  if(over){ bar.className="alertbar"; bar.innerHTML=`⚠️ 本專案目前有 <b style="margin:0 4px">${over} 個功能</b> 已逾期${risk?`，另有 ${risk} 個功能為風險滯後`:''}。請儘速調度。`; }
+  else if(risk){ bar.className="alertbar"; bar.innerHTML=`🟠 本專案有 <b style="margin:0 4px">${risk} 個功能</b> 為風險滯後，請關注。`; }
+  else { bar.className="alertbar ok"; bar.innerHTML=`目前專案運行正常，無逾期或潛在風險。`; }
+}
+
+/* ---------------- 導覽 ---------------- */
+function go(v){
+  currentProject=null;
+  document.getElementById('nav-master').classList.toggle('active',v==='master');
+  document.getElementById('nav-dash').classList.toggle('active',v==='dash');
+  showView(v);
+  if(v==='master'){ setCrumb('專案管理 / <b>專案總覽</b>'); renderMaster(); }
+  else if(v==='dash'){ setCrumb('戰情室 / <b>專案儀表板</b>'); renderDash(); }
+}
+function goStatus(s){ go('master'); const sel=document.getElementById('f-status'); if(sel) sel.value=s; const mg=document.getElementById('f-margin'); if(mg) mg.classList.remove('on'); renderMaster(); }
+function showView(v){
+  document.getElementById('view-dash').classList.toggle('active',v==='dash');
+  document.getElementById('view-master').classList.toggle('active',v==='master');
+  document.getElementById('view-project').classList.toggle('active',v==='project');
+}
+/* ===== 專案儀表板（主管戰情室） ===== */
+const DASH_COL={'進行中':'var(--green)','維護中':'var(--blue)','未開始':'var(--amber)','已完工':'var(--purple)'};
+const STAT_CHIP={'進行中':['rgba(18,183,106,.14)','#0a8a4f'],'維護中':['rgba(46,111,255,.14)','#2e6fff'],'未開始':['rgba(247,144,9,.16)','#b45f04'],'已完工':['rgba(122,90,248,.14)','#6742e0']};
+function renderDash(){
+  const ps=projects.slice();
+  const n=ps.length;
+  const order=['進行中','維護中','未開始','已完工'];
+  const byS={}; order.forEach(s=>byS[s]=0); ps.forEach(p=>{ byS[p.status]=(byS[p.status]||0)+1; });
+  const sumQuote=ps.reduce((a,p)=>a+(+p.quote||0),0);
+  const sumAct=ps.reduce((a,p)=>a+actCost(p),0);
+  const portMargin=sumQuote?(sumQuote-sumAct)/sumQuote*100:0;
+  const el=id=>document.getElementById(id);
+  // KPI
+  el('d-total').innerText=n;
+  el('d-total-sub').innerText=`未開始 ${byS['未開始']||0} 案待啟動`;
+  el('d-active').innerText=byS['進行中']||0;
+  el('d-active-sub').innerText='開發建置中';
+  el('d-maint').innerText=byS['維護中']||0;
+  el('d-maint-sub').innerText='已上線維運中';
+  el('d-closed').innerText=byS['已完工']||0;
+  el('d-closed-sub').innerText='已交付結案';
+  el('d-status-total').innerText=`共 ${n} 案`;
+  // 圓環
+  const segs=order.map(s=>[s,byS[s]||0,DASH_COL[s]]).filter(x=>x[1]>0);
+  const R=58,SW=20,C=2*Math.PI*R,tot=n||1; let off=0;
+  const arcs=segs.map(([s,v,c])=>{ const len=v/tot*C; const seg=`<circle cx="78" cy="78" r="${R}" fill="none" stroke="${c}" stroke-width="${SW}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 78 78)"/>`; off+=len; return seg; }).join('');
+  el('d-donut').innerHTML=`<svg width="156" height="156" viewBox="0 0 156 156">
+    <circle cx="78" cy="78" r="${R}" fill="none" stroke="var(--panel2)" stroke-width="${SW}"/>
+    ${arcs}
+    <text x="78" y="72" text-anchor="middle" font-size="30" font-weight="800" fill="var(--txt)">${n}</text>
+    <text x="78" y="94" text-anchor="middle" font-size="11" fill="var(--muted)">總專案數</text></svg>`;
+  el('d-legend').innerHTML=segs.map(([s,v,c])=>`<div class="dl-row"><span class="sw" style="background:${c}"></span><span class="dl-name">${s}</span><span class="dl-cnt">${v} 案</span><span class="dl-pct">${Math.round(v/tot*100)}%</span></div>`).join('')||'<div class="csub">尚無專案</div>';
+  // RD/QA 維運工時（實際投入，取自各專案月份工時明細 hr ÷8 → 人日）
+  const wroles=[['RD','rd','var(--green)'],['QA','qa','var(--blue)'],['PJM','pjm','var(--amber)'],['FAE','fae','var(--purple)']];
+  const whr={}; wroles.forEach(([nm,k])=>whr[k]=0);
+  ps.forEach(p=>((p.ltrack&&p.ltrack.months)||[]).forEach(m=>wroles.forEach(([nm,k])=>whr[k]+=(+m[k]||0))));
+  const wload=wroles.map(([nm,k,col])=>[nm,Math.round(whr[k]/8*10)/10,col]);
+  const maxW=Math.max(1,...wload.map(r=>r[1])), wtot=wload.reduce((a,r)=>a+r[1],0);
+  el('d-rdqa').innerHTML= wtot? wload.map(([nm,md,col])=>`<div class="finbar">
+    <div class="fb-top"><span class="fb-name">${nm}</span><span class="fb-val">${md} 人日</span></div>
+    <div class="fb-track"><div class="fb-fill" style="width:${md?Math.max(5,md/maxW*100):0}%;background:${col}"></div></div></div>`).join('')
+    : '<div class="d-empty"><div class="ei">🧮</div><div class="et">尚無維運工時可統計</div></div>';
+  // 需要關注
+  const risk=ps.map(p=>{
+    const am=actMargin(p),em=estMargin(p),tgt=+p.target||45,ld=parseD(p.launch); const reasons=[];
+    if((p.status==='進行中'||p.status==='維護中')&&am<30) reasons.push('實際毛利偏低 '+am.toFixed(1)+'%');
+    if(em<tgt&&p.quote) reasons.push('預估毛利 '+em.toFixed(1)+'% 低於目標 '+tgt+'%');
+    if(ld&&ld<TODAY_D&&p.status==='進行中') reasons.push('已過預計上線日 '+(p.launch||''));
+    return {p,am,reasons};
+  }).filter(x=>x.reasons.length).sort((a,b)=>a.am-b.am).slice(0,6);
+  el('d-risk').innerHTML=risk.length? risk.map(({p,am,reasons})=>{
+    const col=am<15?'var(--red)':am<30?'var(--amber)':'var(--blue)';
+    const ch=STAT_CHIP[p.status]||['var(--chip)','var(--muted)'];
+    return `<div class="risk-item">
+      <div class="risk-main"><div class="risk-name"><span class="st-chip" style="background:${ch[0]};color:${ch[1]}">${p.status}</span>${p.name||'未命名專案'}</div><div class="risk-reason">${reasons[0]}${reasons.length>1?' · +'+(reasons.length-1):''}</div></div>
+      <div class="risk-val" style="color:${col}">${am.toFixed(1)}%<span class="rv-lbl">實際毛利</span></div></div>`;
+  }).join('') : '<div class="d-empty"><div class="ei">✅</div><div class="et">目前沒有需要關注的專案</div></div>';
+  // 即將上線
+  const up=ps.map(p=>({p,d:parseD(p.launch)})).filter(x=>x.d&&x.d>=TODAY_D&&x.p.status!=='已完工').sort((a,b)=>a.d-b.d).slice(0,5);
+  const MON=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  el('d-upcoming').innerHTML=up.length? up.map(({p,d})=>{
+    const days=Math.ceil((d-TODAY_D)/86400000);
+    const bg=days<=14?'rgba(229,72,77,.12)':days<=30?'rgba(247,144,9,.14)':'rgba(46,111,255,.12)';
+    const fg=days<=14?'var(--red)':days<=30?'#b45f04':'var(--blue)';
+    return `<div class="up-item"><div class="up-date"><div class="d">${d.getDate()}</div><div class="m">${MON[d.getMonth()]}</div></div>
+      <div class="up-main"><div class="up-name">${p.name||'未命名專案'}</div><div class="up-meta">${p.pjm||'未指派'} · ${p.type||'--'}</div></div>
+      <span class="up-days" style="background:${bg};color:${fg}">${days} 天</span></div>`;
+  }).join('') : '<div class="d-empty"><div class="ei">📭</div><div class="et">近期無排定上線的專案</div></div>';
+  // PJM 負載
+  const pm={}; ps.forEach(p=>{ const k=p.pjm||'未指派'; (pm[k]=pm[k]||{cnt:0,active:0,maint:0,quote:0}); pm[k].cnt++; if(p.status==='進行中')pm[k].active++; if(p.status==='維護中')pm[k].maint++; pm[k].quote+=(+p.quote||0); });
+  const pmArr=Object.entries(pm).sort((a,b)=>b[1].cnt-a[1].cnt).slice(0,6);
+  el('d-pmload').innerHTML=pmArr.map(([name,v])=>`<div class="pm-row">
+    <div class="pm-main"><div class="pm-name">${name}</div><div class="pm-sub">進行中 ${v.active} · 維護中 ${v.maint} · ${fmt(v.quote)}</div></div>
+    <div class="pm-count">${v.cnt}<span class="pc-lbl">專案</span></div></div>`).join('');
+}
+function setCrumb(h){ document.getElementById('crumb').innerHTML=h; }
+function tab(t){ ['overview','scope','costtrack','timeline','deliverables'].forEach(x=>{ document.getElementById('tab-'+x).classList.toggle('active',x===t); document.getElementById('sub-'+x).classList.toggle('active',x===t); }); if(t==='costtrack'&&currentProject) recalcCT(); }
+function toggleNotif(){ document.getElementById('notif').classList.toggle('open'); }
+document.addEventListener('click',e=>{ if(!e.target.closest('.bell')&&!e.target.closest('.notif')) document.getElementById('notif').classList.remove('open'); });
+
+/* ---------------- 成本計算追蹤表 ---------------- */
+function r2(n){ return Math.round(n*100)/100; }
+function defaultCats(){ return [
+  {name:'內部人力成本', type:'人力', kind:'internal', est:0, cost:0, note:''},
+  {name:'外部人力成本', type:'人力', kind:'labor', est:0, usage:0, cost:0, note:''},
+  {name:'外購網路服務', type:'服務', kind:'service', est:0, cost:0, note:''},
+];}
+function monthsMD(p){ let hr=0; (p.ltrack.months||[]).forEach(m=>hr+=(+m.pjm||0)+(+m.rd||0)+(+m.qa||0)+(+m.fae||0)); return hr/8; }
+function catCost(p,c){ return c.kind==='internal'? monthsMD(p)*5000 : (+c.cost||0); }   // 實際成本 (NT$)
+function catEstCost(p,c){ return +c.est||0; }                                            // 預估成本 (NT$)
+function renderCostTrack(){
+  const p=currentProject; if(!p.ltrack) p.ltrack={months:[],cats:defaultCats()};
+  if(!p.ltrack.cats) p.ltrack.cats=defaultCats();
+  const c=document.getElementById('ct-months'); c.innerHTML="";
+  if(!p.ltrack.months.length){ c.innerHTML=`<div class="empty-box" style="padding:22px">尚無月份工時，點右上「＋ 新增月份工時」開始。</div>`; }
+  p.ltrack.months.forEach((m,i)=>{
+    const role=(lbl,r)=>`<div class="cc"><label>${lbl} (hr)</label><input class="cinp num" type="number" value="${m[r]}" onchange="ctSet(${i},'${r}',this.value)"></div>`;
+    c.innerHTML+=`<div class="ct-row">
+      <div class="cc"><label>月份</label><input class="cinp" value="${m.month||''}" placeholder="YYYY-MM" onchange="ctSet(${i},'month',this.value)"></div>
+      <div class="cc"><label>階段</label><button class="stagebtn ${m.stage}" onclick="ctToggleStage(${i})">${m.stage==='dev'?'正式開發':'開案前'}</button></div>
+      ${role('PJM','pjm')}${role('RD','rd')}${role('QA','qa')}${role('FAE','fae')}
+      <div class="cc"><label>雜項 (NT$)</label><input class="cinp num" type="number" value="${m.misc}" onchange="ctSet(${i},'misc',this.value)"></div>
+      <div class="cc"><label>備註</label><input class="cinp" value="${(m.note||'').replace(/"/g,'&quot;')}" onchange="ctSet(${i},'note',this.value)"></div>
+      <div class="cc"><label>&nbsp;</label><span class="rowdel" onclick="ctDel(${i})">🗑</span></div>
+    </div>`;
+  });
+  recalcCT();
+}
+function recalcCT(){
+  const p=currentProject, d=document, tgt=+p.target||45; if(!p.ltrack) return;
+  const cats=p.ltrack.cats||[], md=monthsMD(p);
+  const tb=d.getElementById('ct-cats-body'); tb.innerHTML="";
+  let actTotal=0;
+  cats.forEach((c,i)=>{
+    const cost=catCost(p,c); actTotal+=cost;
+    const nameCell = c.kind==='custom'? `<input class="cinp" value="${(c.name||'').replace(/"/g,'&quot;')}" onchange="ctCat(${i},'name',this.value)">`
+      : `${c.name}<div class="ct-costsub">${c.kind==='internal'?'(自動連動工時明細)':c.kind==='labor'?'(自訂填寫)':''}</div>`;
+    const tcls = /人力/.test(c.type||'')?'blue' : /服務/.test(c.type||'')?'green' : /硬體|軟體|授權/.test(c.type||'')?'purple' : 'gray';
+    const tsize=Math.max(3,(c.type||'費用類型').length);
+    const typeCell = c.kind==='custom'? `<input class="ctag ${tcls}" size="${tsize}" value="${(c.type||'').replace(/"/g,'&quot;')}" placeholder="費用類型" onchange="ctCat(${i},'type',this.value)">` : `<span class="pill ${c.type==='服務'?'green':'blue'}">${c.type}</span>`;
+    let costCell, noteCell, opCell;
+    if(c.kind==='internal'){
+      costCell=`<b>${r2(md)} 人日 / ${fmt(md*5000)}</b>`;
+      noteCell=`<span class="ct-costsub">［唯讀］上方工時明細自動結算</span>`; opCell=`<span style="color:#94a3b8">—</span>`;
+    } else {
+      costCell=`<input class="cinp num" style="width:130px" type="number" value="${c.cost||0}" onchange="ctCat(${i},'cost',this.value)">`;
+      noteCell=`<input class="cinp" value="${(c.note||'').replace(/"/g,'&quot;')}" onchange="ctCat(${i},'note',this.value)">`; opCell=`<span class="rowdel" onclick="ctDelCat(${i})">🗑</span>`;
+    }
+    tb.innerHTML+=`<tr><td>${nameCell}</td><td>${typeCell}</td><td class="actual">${costCell}</td><td>${noteCell}</td><td>${opCell}</td></tr>`;
+  });
+  tb.innerHTML+=`<tr class="ct-addrow"><td colspan="5"><button class="btn sm" onclick="ctAddCat()">＋ 自行新增項目</button></td></tr>`;
+  const q=+p.quote||0, est=estCost(p), profit=q-actTotal, margin=q? profit/q*100:0, em=estMargin(p);
+  d.getElementById('ct-quote-v').innerText=fmt(q);
+  d.getElementById('ct-estcost-k').innerText=fmt(est);
+  d.getElementById('ct-actcost-k').innerText=fmt(actTotal);
+  d.getElementById('ct-act-total').innerText=fmt(actTotal);
+  const pf=d.getElementById('ct-profit'); pf.innerText=(profit<0?"−":"")+fmt(Math.abs(profit)); pf.className='v '+(profit<0?'mg-red':profit>0?'mg-green':'mg-grey');
+  const below = margin>0 && margin<em;
+  const mgcls = margin<=0?'mg-red' : below?'mg-amber' : 'mg-green';
+  const mg=d.getElementById('ct-margin'); mg.innerText=margin.toFixed(2)+"%"+(below?' ⚠️':''); mg.className='v big '+mgcls;
+  d.getElementById('ct-margin-card').className='ct-card-k hl-card '+(mgcls==='mg-red'?'hl-red':mgcls==='mg-amber'?'hl-amber':'hl-green');
+}
+function ctCat(i,f,v){ const c=currentProject.ltrack.cats[i]; c[f]=(['est','act','cost','usage'].includes(f))?(parseFloat(v)||0):v; recalcCT(); }
+function ctDelCat(i){ currentProject.ltrack.cats.splice(i,1); recalcCT(); }
+function ctAddCat(){ currentProject.ltrack.cats.push({name:'新項目',type:'其他',kind:'custom',est:0,act:0,cost:0,note:''}); recalcCT(); }
+function ctSet(i,f,v){ const m=currentProject.ltrack.months[i]; m[f]=(['pjm','rd','qa','fae','misc'].includes(f))?(parseFloat(v)||0):v; renderCostTrack(); }
+function ctToggleStage(i){ const m=currentProject.ltrack.months[i]; m.stage=(m.stage==='dev')?'pre':'dev'; renderCostTrack(); }
+function ctDel(i){ currentProject.ltrack.months.splice(i,1); renderCostTrack(); }
+function ctAddMonth(){ const d=new Date(); const mm=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0'); currentProject.ltrack.months.push({month:mm,stage:'dev',pjm:0,rd:0,qa:0,fae:0,misc:0,note:""}); renderCostTrack(); }
+
+/* ---- 每頁儲存 ---- */
+let toastT=null;
+function showToast(msg){ const t=document.getElementById('toast'); t.innerText="✓ "+msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800); }
+function saveTab(nm){ if(currentProject) renderMaster(); showToast(nm+"已儲存"); }
+/* 每頁底部：個別儲存 + 返回總覽 */
+const TAB_FOOT={'sub-overview':'基本資料','sub-scope':'功能範疇與報價','sub-costtrack':'成本計算追蹤表','sub-deliverables':'交付文件'};
+Object.entries(TAB_FOOT).forEach(([id,nm])=>{
+  const el=document.getElementById(id); if(!el) return;
+  const bar=document.createElement('div'); bar.className='tabfoot';
+  bar.innerHTML=`<button class="btn ghost sm" onclick="go('master')">返回總覽</button><button class="btn sm" onclick="saveTab('${nm}')">💾 儲存${nm}</button>`;
+  el.appendChild(bar);
+});
+
+/* init */
+projects=DEMO(); renderMaster(); renderDash(); setCrumb('戰情室 / <b>專案儀表板</b>');
+</script>
+</body>
+</html>
