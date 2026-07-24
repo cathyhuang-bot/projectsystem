@@ -6,6 +6,8 @@
 <title>專案管理系統 · 時程與成本控管模組 Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Supabase（雲端資料庫，多人共用） -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#f4f8f6; --panel:#ffffff; --panel2:#f1f6f4; --line:#e3ebe8;
@@ -1013,20 +1015,22 @@ function renderMaster(){
     }
   });
   syncSelUI();
+  if(SB_READY&&currentProject) cloudSave(currentProject);
 }
 /* 選取 */
 function toggleSel(code,el){ el.checked?selected.add(code):selected.delete(code); el.closest('tr').classList.toggle('sel',el.checked); syncSelUI(); }
 function toggleSelAll(el){ selected.clear(); if(el.checked) projects.forEach(p=>selected.add(p.code)); renderMaster(); }
 function syncSelUI(){ const n=selected.size,b=document.getElementById('del-sel'); b.innerText=`🗑 刪除選取 (${n})`; b.disabled=n===0;
   const all=document.getElementById('sel-all'); if(all){ all.checked=projects.length>0&&n===projects.length; all.indeterminate=n>0&&n<projects.length; } }
-function deleteSelected(){ if(!selected.size)return; if(!confirm(`確定刪除選取的 ${selected.size} 個專案？`))return; projects=projects.filter(p=>!selected.has(p.code)); selected.clear(); renderMaster(); }
-function deleteProject(code,e){ e.stopPropagation(); const p=projects.find(x=>x.code===code); if(!confirm(`確定刪除「${p.name}」(${code})？`))return; projects=projects.filter(x=>x.code!==code); selected.delete(code); renderMaster(); }
+function deleteSelected(){ if(!selected.size)return; if(!confirm(`確定刪除選取的 ${selected.size} 個專案？`))return; projects.filter(p=>selected.has(p.code)).forEach(cloudDelete); projects=projects.filter(p=>!selected.has(p.code)); selected.clear(); renderMaster(); }
+function deleteProject(code,e){ e.stopPropagation(); const p=projects.find(x=>x.code===code); if(!confirm(`確定刪除「${p.name}」(${code})？`))return; cloudDelete(p); projects=projects.filter(x=>x.code!==code); selected.delete(code); renderMaster(); }
 function restoreDemo(){ projects=DEMO(); selected.clear(); renderMaster(); }
 
 /* ---------------- 新增專案（直接進基本資料頁，欄位全部空白） ---------------- */
 function addProjectDirect(){
   const p=mk({code:"", name:"", pjm:"", type:"", ms:"", launch:"", start:"", status:"未開始", quote:0});
   projects.unshift(p);
+  cloudSave(p);
   openProjectObj(p);
   const c=document.getElementById('e-code'); if(c) c.focus();
   showToast("已建立新專案，請填寫基本資料");
@@ -1684,7 +1688,54 @@ Object.entries(TAB_FOOT).forEach(([id,nm])=>{
 });
 
 /* init */
-projects=DEMO(); renderMaster(); renderDash(); setCrumb('戰情室 / <b>專案儀表板</b>');
+/* ===== Supabase 雲端資料庫（多人共用；填入下方 URL/KEY 即啟用） ===== */
+/* 設定步驟：
+   1) 到 https://supabase.com 用 email 註冊（免 Google 帳號），建立一個專案
+   2) 左側 SQL Editor 執行以下建表與權限（測試用，開放讀寫）：
+        create table if not exists projects (id text primary key, data jsonb);
+        alter table projects enable row level security;
+        create policy "public_all" on projects for all using (true) with check (true);
+   3) Project Settings → API：複製 Project URL 與 anon public key 貼到下方
+   未填時，系統以本機示範資料運作（不會存雲端）。 */
+const SUPABASE_URL = "https://rqscukyunuxqikvxuxel.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxc2N1a3l1bnV4cWlrdnh1eGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4ODEyOTgsImV4cCI6MjEwMDQ1NzI5OH0.c_aB3wV2EgF4Ckpor50Fzk6gEoZtRjB4KaHdaOUIIWQ";   /* anon public key */
+let SB=null, SB_READY=false, saveTimers={};
+function sbInit(){
+  try{
+    if(!SUPABASE_URL || !SUPABASE_KEY || !window.supabase){ console.warn('[雲端] 未設定 Supabase，使用本機示範資料'); return false; }
+    SB=window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    SB_READY=true; console.log('[雲端] Supabase 已連線'); return true;
+  }catch(e){ console.warn('[雲端] 初始化失敗', e); return false; }
+}
+async function cloudLoadAll(){
+  if(!SB_READY) return null;
+  const {data,error}=await SB.from('projects').select('id,data');
+  if(error){ console.warn('[雲端] 載入失敗', error); return null; }
+  return (data||[]).map(r=>{ const o=r.data||{}; o._id=r.id; return o; });
+}
+function cloudSave(p){
+  if(!SB_READY||!p) return;
+  if(!p._id) p._id=(p.code||'P')+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  clearTimeout(saveTimers[p._id]);
+  saveTimers[p._id]=setTimeout(async()=>{
+    const clean=JSON.parse(JSON.stringify(p));
+    const {error}=await SB.from('projects').upsert({id:p._id, data:clean});
+    if(error) console.warn('[雲端] 儲存失敗', error); else console.log('[雲端] 已儲存', p.code||p._id);
+  },700);
+}
+function cloudDelete(p){
+  if(!SB_READY||!p||!p._id) return;
+  SB.from('projects').delete().eq('id',p._id).then(({error})=>{ if(error) console.warn('[雲端] 刪除失敗', error); });
+}
+async function boot(){
+  sbInit();
+  let loaded=null;
+  if(SB_READY){ try{ loaded=await cloudLoadAll(); }catch(e){ console.warn('[雲端] 載入失敗', e); } }
+  if(loaded && loaded.length){ projects=loaded; }
+  else { projects=DEMO(); if(SB_READY){ projects.forEach(cloudSave); } }
+  renderMaster(); renderDash(); setCrumb('戰情室 / <b>專案儀表板</b>');
+}
+boot();
 </script>
 </body>
 </html>
